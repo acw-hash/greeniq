@@ -1,0 +1,247 @@
+# =============================================================================
+# .gitignore for Next.js 14 + App Router + Supabase + Stripe + TypeScript
+# =============================================================================
+
+# Dependencies
+# ============
+node_modules/
+/.pnp
+.pnp.js
+.yarn/
+.npm/
+
+# Package manager lock files (choose one, keep the rest ignored)
+# =============================================================
+# Keep only one of these uncommented based on your package manager:
+# package-lock.json  # Uncomment if using yarn or pnpm
+# yarn.lock          # Uncomment if using npm or pnpm  
+# pnpm-lock.yaml     # Uncomment if using npm or yarn
+
+# Next.js build outputs and cache
+# ===============================
+.next/
+out/
+build/
+dist/
+
+# Next.js cache and generated files
+/.next/
+/out/
+next-env.d.ts
+
+# Production build artifacts
+# =========================
+*.tgz
+*.tar.gz
+
+# Runtime data and logs
+# ====================
+pids
+*.pid
+*.seed
+*.pid.lock
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage directory used by tools like istanbul
+# ==============================================
+coverage/
+*.lcov
+.coverage/
+.nyc_output
+
+# Environment variables and secrets
+# =================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# Supabase specific
+# =================
+# Generated TypeScript types from Supabase
+types/supabase.ts
+types/database.ts
+database.types.ts
+
+# Local Supabase development files
+supabase/.branches
+supabase/.temp
+supabase/logs
+
+# Database files
+# ==============
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE and Editor files
+# ===================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# WebStorm/IntelliJ
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Operating System files
+# ======================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Temporary files and caches
+# ==========================
+.cache/
+.parcel-cache/
+.tmp/
+tmp/
+temp/
+
+# Testing
+# =======
+.jest/
+coverage/
+test-results/
+playwright-report/
+test-results.xml
+
+# Stripe specific (if storing webhook secrets locally)
+# ===================================================
+stripe-webhook-secret.txt
+.stripe/
+
+# User uploaded content and assets
+# ================================
+uploads/
+user-uploads/
+public/uploads/
+public/user-content/
+storage/
+
+# Vercel deployment files
+# ======================
+.vercel
+
+# Turborepo
+# =========
+.turbo
+
+# Sentry
+# ======
+.sentryclirc
+
+# Bundle analysis
+# ===============
+.bundle-analyzer/
+bundle-report.html
+
+# Storybook
+# =========
+storybook-static/
+
+# TypeScript incremental compilation
+# ==================================
+*.tsbuildinfo
+
+# Optional npm cache directory
+# ============================
+.npm
+
+# Optional eslint cache
+# ====================
+.eslintcache
+
+# Microbundle cache
+# =================
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+# ====================
+.node_repl_history
+
+# Yarn Integrity file
+# ===================
+.yarn-integrity
+
+# dotenv environment variables file
+# =================================
+.env.backup
+
+# Local development overrides
+# ===========================
+docker-compose.override.yml
+.local/
+
+# =============================================================================
+# IMPORTANT NOTES:
+# =============================================================================
+# 1. After cloning, run: npm install (or yarn/pnpm install)
+# 2. Copy .env.example to .env.local and fill in your environment variables
+# 3. Run: npx supabase gen types typescript --local to generate types
+# 4. The project should be ready for development!
+# =============================================================================
