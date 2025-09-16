@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { updateApplicationSchema } from '@/lib/validations/jobs'
+import { updateApplicationSchema, type UpdateApplicationData } from '@/lib/validations/jobs'
 
 export async function GET(
   request: NextRequest,
@@ -19,19 +19,7 @@ export async function GET(
       .from('applications')
       .select(`
         *,
-        jobs!inner(
-          *,
-          profiles!course_id(
-            *,
-            golf_course_profiles(course_name, address)
-          )
-        ),
-        profiles!professional_id(
-          full_name,
-          email,
-          phone,
-          professional_profiles(*)
-        )
+        jobs!inner(course_id)
       `)
       .eq('id', params.id)
       .single()
@@ -43,10 +31,24 @@ export async function GET(
       throw error
     }
     
+    // Type assertion for the query result
+    const application = data as {
+      id: string
+      professional_id: string | null
+      job_id: string | null
+      message: string | null
+      proposed_rate: number | null
+      status: string | null
+      applied_at: string | null
+      jobs: {
+        course_id: string | null
+      } | null
+    }
+    
     // Verify user can access this application
     const canAccess = 
-      data.professional_id === user.id || 
-      data.jobs?.course_id === user.id
+      application.professional_id === user.id || 
+      application.jobs?.course_id === user.id
     
     if (!canAccess) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
@@ -76,7 +78,7 @@ export async function PUT(
     }
     
     // Get application details
-    const { data: application } = await supabase
+    const { data: applicationData } = await supabase
       .from('applications')
       .select(`
         *,
@@ -84,6 +86,19 @@ export async function PUT(
       `)
       .eq('id', params.id)
       .single()
+      
+    const application = applicationData as {
+      id: string
+      professional_id: string | null
+      job_id: string | null
+      message: string | null
+      proposed_rate: number | null
+      status: string | null
+      applied_at: string | null
+      jobs: {
+        course_id: string | null
+      } | null
+    } | null
     
     if (!application) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 })
@@ -91,7 +106,7 @@ export async function PUT(
     
     // Validate request body
     const body = await request.json()
-    const validatedData = updateApplicationSchema.parse(body)
+    const validatedData = updateApplicationSchema.parse(body) as UpdateApplicationData
     
     // Only golf course can update application status
     if (validatedData.status && application.jobs?.course_id !== user.id) {
@@ -105,32 +120,23 @@ export async function PUT(
       .eq('id', params.id)
       .select(`
         *,
-        jobs!inner(
-          title,
-          profiles!course_id(
-            golf_course_profiles(course_name)
-          )
-        ),
-        profiles!professional_id(
-          full_name,
-          professional_profiles(*)
-        )
+        jobs!inner(course_id)
       `)
       .single()
     
     if (error) throw error
     
     // If application is accepted, close the job
-    if (validatedData.status === 'accepted') {
+    if (validatedData.status === 'accepted' && application.job_id) {
       await supabase
         .from('jobs')
-        .update({ status: 'in_progress' })
+        .update({ status: 'in_progress' } as any)
         .eq('id', application.job_id)
       
       // Reject other pending applications for this job
       await supabase
         .from('applications')
-        .update({ status: 'rejected' })
+        .update({ status: 'rejected' } as any)
         .eq('job_id', application.job_id)
         .neq('id', params.id)
         .eq('status', 'pending')
@@ -162,11 +168,16 @@ export async function DELETE(
     }
     
     // Verify application ownership (only professional can delete their own application)
-    const { data: application } = await supabase
+    const { data: applicationData } = await supabase
       .from('applications')
       .select('professional_id, status')
       .eq('id', params.id)
       .single()
+      
+    const application = applicationData as {
+      professional_id: string | null
+      status: string | null
+    } | null
     
     if (!application || application.professional_id !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })

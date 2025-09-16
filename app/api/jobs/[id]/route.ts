@@ -47,7 +47,7 @@ export async function GET(
 
     // Get applications with professional details (for job owner)
     const { data: { user } } = await supabase.auth.getUser()
-    let applications = []
+    let applications: any[] = []
     
     if (user && job.course_id === user.id) {
       const { data: applicationData } = await supabase
