@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Logo, FooterLogo } from '@/components/ui/Logo'
 import { CheckCircle, Users, MapPin, Clock, DollarSign, Shield } from 'lucide-react'
 
 export default function LandingPage() {
@@ -10,12 +11,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">GI</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">GreenIQ</span>
-          </div>
+          <Logo variant="full" size="md" clickable href="/" />
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="#features" className="text-gray-600 hover:text-gray-900">
               Features
@@ -41,8 +37,8 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <Badge className="mb-4" variant="secondary">
-            🌱 Revolutionizing Golf Course Maintenance
+          <Badge className="mb-6" variant="professional">
+            Revolutionizing Golf Course Maintenance
           </Badge>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Connect Golf Courses with
@@ -376,7 +372,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             <Link href="/register/professional">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
                 Find Work Now
               </Button>
             </Link>
@@ -389,11 +385,8 @@ export default function LandingPage() {
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">GI</span>
-                </div>
-                <span className="text-lg font-bold">GreenIQ</span>
+              <div className="mb-4">
+                <FooterLogo />
               </div>
               <p className="text-gray-400">
                 The premier marketplace connecting golf courses with qualified maintenance professionals.

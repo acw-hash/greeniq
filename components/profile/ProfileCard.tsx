@@ -234,7 +234,7 @@ export function ProfileCard({
               <span className="text-sm">{profile.phone}</span>
             </div>
           )}
-          {profile.location && (
+          {profile.location && typeof profile.location === 'string' && (
             <div className="flex items-center space-x-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">{formatLocation(profile.location)}</span>

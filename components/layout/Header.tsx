@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { HeaderLogo } from '@/components/ui/Logo'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,8 +58,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center justify-between">
+    <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="px-6 lg:px-12 xl:px-16 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
@@ -69,19 +70,12 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Menu className="h-5 w-5" />
           </Button>
           
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">GI</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">
-              GreenIQ
-            </span>
-          </Link>
+          <HeaderLogo />
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {/* Quick Actions */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-3">
             {profile?.user_type === 'golf_course' && (
               <Link href="/jobs/create">
                 <Button size="sm">

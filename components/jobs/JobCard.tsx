@@ -86,7 +86,7 @@ export function JobCard({
               <span className="capitalize">{job.urgency_level}</span>
             </Badge>
             <div className="text-right">
-              <div className="font-bold text-green-600">${job.hourly_rate}/hr</div>
+              <div className="font-bold text-green-700 dark:text-green-400 text-lg">${job.hourly_rate}/hr</div>
             </div>
           </div>
         </div>

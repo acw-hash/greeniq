@@ -2,9 +2,6 @@ import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { QueryProvider } from '@/lib/providers/QueryProvider'
 import { Toaster } from '@/components/ui/toaster'
-import { AuthDebugger } from '@/components/debug/AuthDebugger'
-import { AuthFlowTester } from '@/components/debug/AuthFlowTester'
-import { AuthDebugLoader } from '@/components/debug/AuthDebugLoader'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -24,19 +21,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
             {children}
             <Toaster />
-            {process.env.NODE_ENV === 'development' && (
-              <>
-                <AuthDebugLoader />
-                <AuthDebugger />
-                <AuthFlowTester />
-              </>
-            )}
           </AuthProvider>
         </QueryProvider>
       </body>

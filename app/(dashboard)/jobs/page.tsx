@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 // Simple jobs page that won't crash
 export default function JobsPage() {
@@ -9,11 +10,10 @@ export default function JobsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Available Jobs</h1>
-        <Link 
-          href="/jobs/create" 
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-        >
-          Post a Job
+        <Link href="/jobs/create">
+          <Button className="bg-green-600 text-white hover:bg-green-700">
+            Post a Job
+          </Button>
         </Link>
       </div>
       
@@ -78,12 +78,12 @@ function JobsList() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">Error loading jobs: {error}</p>
-        <button 
+        <Button 
           onClick={fetchJobs} 
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white hover:bg-blue-700"
         >
           Try Again
-        </button>
+        </Button>
       </div>
     )
   }

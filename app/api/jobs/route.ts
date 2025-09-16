@@ -36,19 +36,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    // Verify user is a golf course
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile || profile.user_type !== 'golf_course') {
+      return NextResponse.json({ error: 'Only golf courses can post jobs' }, { status: 403 })
+    }
+    
     // Parse and validate request body
     const body = await request.json()
     const validatedData = createJobSchema.parse(body)
     
+    // Prepare job data for database
+    const jobData = {
+      course_id: user.id,
+      title: validatedData.title,
+      description: validatedData.description,
+      job_type: validatedData.job_type,
+      location: `POINT(${validatedData.location.lng} ${validatedData.location.lat})`,
+      start_date: new Date(validatedData.start_date).toISOString(),
+      end_date: validatedData.end_date && validatedData.end_date !== '' 
+        ? new Date(validatedData.end_date).toISOString() 
+        : null,
+      hourly_rate: validatedData.hourly_rate,
+      required_certifications: validatedData.required_certifications || [],
+      required_experience: validatedData.required_experience || null,
+      urgency_level: validatedData.urgency_level,
+      status: 'open' as const
+    }
+    
     // Create job in database
     const { data, error } = await supabase
       .from('jobs')
-      .insert({
-        ...validatedData,
-        course_id: user.id,
-        location: `POINT(${validatedData.location.lng} ${validatedData.location.lat})`
-      })
-      .select()
+      .insert(jobData)
+      .select(`
+        *,
+        golf_course_profiles(course_name, address)
+      `)
       .single()
     
     if (error) {
@@ -56,10 +84,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create job' }, { status: 500 })
     }
     
+    // TODO: Trigger notifications to matching professionals
+    
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Invalid data', 
+        details: error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }))
+      }, { status: 400 })
     }
     
     console.error('API error:', error)

@@ -3,8 +3,8 @@ import { z } from 'zod'
 // Job types constants
 export const JOB_TYPES = [
   { value: 'greenskeeping', label: 'Greenskeeping' },
-  { value: 'equipment', label: 'Equipment Operations' },
-  { value: 'irrigation', label: 'Irrigation & Water Management' },
+  { value: 'equipment_operation', label: 'Equipment Operations' },
+  { value: 'irrigation_maintenance', label: 'Irrigation & Water Management' },
   { value: 'landscaping', label: 'Landscaping' },
   { value: 'general_maintenance', label: 'General Maintenance' }
 ] as const
@@ -19,27 +19,25 @@ export const URGENCY_LEVELS = [
 // Experience levels constants
 export const EXPERIENCE_LEVELS = [
   { value: 'entry', label: 'Entry Level (0-2 years)' },
-  { value: 'mid', label: 'Mid Level (2-5 years)' },
-  { value: 'senior', label: 'Senior Level (5+ years)' },
-  { value: 'expert', label: 'Expert Level (10+ years)' }
+  { value: 'intermediate', label: 'Intermediate Level (3-5 years)' },
+  { value: 'expert', label: 'Expert Level (5+ years)' }
 ] as const
 
 // Certifications constants
 export const CERTIFICATIONS = [
-  { value: 'pesticide_applicator', label: 'Pesticide Applicator License' },
+  { value: 'pesticide_license', label: 'Pesticide Applicator License' },
+  { value: 'equipment_certified', label: 'Heavy Equipment Certified' },
   { value: 'irrigation_certified', label: 'Irrigation Certification' },
-  { value: 'equipment_operator', label: 'Heavy Equipment Operator' },
   { value: 'turf_management', label: 'Turf Management Certificate' },
-  { value: 'landscape_contractor', label: 'Landscape Contractor License' },
-  { value: 'arborist_certified', label: 'Certified Arborist' },
-  { value: 'safety_training', label: 'Safety Training Certification' }
+  { value: 'safety_certified', label: 'Safety Training Certification' },
+  { value: 'commercial_drivers_license', label: 'Commercial Driver\'s License' }
 ] as const
 
 // Job type enum
 export const jobTypeEnum = z.enum([
   'greenskeeping',
-  'equipment',
-  'irrigation', 
+  'equipment_operation',
+  'irrigation_maintenance', 
   'landscaping',
   'general_maintenance'
 ])
@@ -59,15 +57,15 @@ export const locationSchema = z.object({
 
 // Base job creation schema
 export const createJobSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  description: z.string().min(10, 'Description must be at least 10 characters').max(2000, 'Description too long'),
+  title: z.string().min(5, 'Title must be at least 5 characters').max(100, 'Title too long'),
+  description: z.string().min(20, 'Description must be at least 20 characters').max(2000, 'Description too long'),
   job_type: jobTypeEnum,
   location: locationSchema,
-  start_date: z.string().datetime('Invalid start date format'),
-  end_date: z.string().datetime('Invalid end date format').optional(),
-  hourly_rate: z.number().positive('Hourly rate must be positive').max(1000, 'Rate too high'),
+  start_date: z.string().min(1, 'Start date is required'),
+  end_date: z.string().optional().or(z.literal('')),
+  hourly_rate: z.number().min(10, 'Minimum rate is $10/hour').max(200, 'Maximum rate is $200/hour'),
   required_certifications: z.array(z.string()).default([]),
-  required_experience: z.string().optional(),
+  required_experience: z.enum(['entry', 'intermediate', 'expert']).optional(),
   urgency_level: urgencyLevelEnum.default('normal')
 })
 

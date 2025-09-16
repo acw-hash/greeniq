@@ -3,12 +3,16 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Logo } from '@/components/ui/Logo'
 import { Home, ArrowLeft, Search } from 'lucide-react'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
+      <div className="max-w-md w-full space-y-8">
+        <div className="flex justify-center">
+          <Logo variant="full" size="lg" clickable href="/" />
+        </div>
         <Card className="text-center">
           <CardHeader className="pb-6">
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">

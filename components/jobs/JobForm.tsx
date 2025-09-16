@@ -51,9 +51,8 @@ export function JobForm({
       description: initialData?.description || '',
       job_type: initialData?.job_type || undefined,
       location: initialData?.location || {
-        lat: 0,
-        lng: 0,
-        address: ''
+        lat: undefined,
+        lng: undefined
       },
       start_date: initialData?.start_date || '',
       end_date: initialData?.end_date || '',
@@ -68,9 +67,9 @@ export function JobForm({
     onSubmit(data)
   }
 
-  const jobTypeEntries = Object.entries(JOB_TYPES)
-  const urgencyEntries = Object.entries(URGENCY_LEVELS)
-  const experienceEntries = Object.entries(EXPERIENCE_LEVELS)
+  const jobTypes = JOB_TYPES
+  const urgencyLevels = URGENCY_LEVELS
+  const experienceLevels = EXPERIENCE_LEVELS
 
   return (
     <Form {...form}>
@@ -114,14 +113,11 @@ export function JobForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {jobTypeEntries.map(([value, description]) => (
-                        <SelectItem key={value} value={value}>
+                      {jobTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
                           <div>
                             <div className="font-medium">
-                              {value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {description}
+                              {type.label}
                             </div>
                           </div>
                         </SelectItem>
@@ -167,14 +163,11 @@ export function JobForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {urgencyEntries.map(([value, description]) => (
-                        <SelectItem key={value} value={value}>
+                      {urgencyLevels.map((level) => (
+                        <SelectItem key={level.value} value={level.value}>
                           <div>
-                            <div className="font-medium capitalize">
-                              {value}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {description}
+                            <div className="font-medium">
+                              {level.label}
                             </div>
                           </div>
                         </SelectItem>
@@ -194,29 +187,53 @@ export function JobForm({
             <CardTitle>Location & Schedule</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="location.address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Job Location *</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="location.lat"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Latitude *</FormLabel>
+                    <FormControl>
                       <Input
-                        placeholder="Enter the job location address"
-                        className="pl-10"
+                        type="number"
+                        step="any"
+                        placeholder="37.7749"
                         {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                       />
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Specific location where the work will be performed
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                    <FormDescription>
+                      Course latitude coordinate
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="location.lng"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Longitude *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="any"
+                        placeholder="-122.4194"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Course longitude coordinate
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -288,10 +305,12 @@ export function JobForm({
                         <Calendar
                           mode="single"
                           selected={field.value ? new Date(field.value) : undefined}
-                          onSelect={(date) => field.onChange(date?.toISOString().split('T')[0] || '')}
+                          onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
                           disabled={(date) => {
                             const startDate = form.getValues('start_date')
-                            return date < new Date() || (startDate && date <= new Date(startDate))
+                            if (date < new Date()) return true
+                            if (startDate && date <= new Date(startDate)) return true
+                            return false
                           }}
                           initialFocus
                         />
@@ -356,14 +375,11 @@ export function JobForm({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="">No specific requirement</SelectItem>
-                      {experienceEntries.map(([value, description]) => (
-                        <SelectItem key={value} value={value}>
+                      {experienceLevels.map((level) => (
+                        <SelectItem key={level.value} value={level.value}>
                           <div>
-                            <div className="font-medium capitalize">
-                              {value} Level
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {description}
+                            <div className="font-medium">
+                              {level.label}
                             </div>
                           </div>
                         </SelectItem>
@@ -389,31 +405,31 @@ export function JobForm({
                   <div className="grid grid-cols-2 gap-3">
                     {CERTIFICATIONS.map((cert) => (
                       <FormField
-                        key={cert}
+                        key={cert.value}
                         control={form.control}
                         name="required_certifications"
                         render={({ field }) => {
                           return (
                             <FormItem
-                              key={cert}
+                              key={cert.value}
                               className="flex flex-row items-start space-x-3 space-y-0"
                             >
                               <FormControl>
                                 <Checkbox
-                                  checked={field.value?.includes(cert)}
+                                  checked={field.value?.includes(cert.value)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...field.value, cert])
+                                      ? field.onChange([...field.value, cert.value])
                                       : field.onChange(
                                           field.value?.filter(
-                                            (value) => value !== cert
+                                            (value) => value !== cert.value
                                           )
                                         )
                                   }}
                                 />
                               </FormControl>
                               <FormLabel className="text-sm font-normal">
-                                {cert.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                {cert.label}
                               </FormLabel>
                             </FormItem>
                           )

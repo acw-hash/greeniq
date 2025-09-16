@@ -100,7 +100,7 @@ export function AuthFlowTester() {
       } else {
         updateStep('session', { 
           status: 'success', 
-          message: `Session valid until ${new Date(session.expires_at * 1000).toLocaleString()}`,
+          message: `Session valid until ${new Date((session.expires_at || 0) * 1000).toLocaleString()}`,
           details: { expiresAt: session.expires_at }
         })
       }

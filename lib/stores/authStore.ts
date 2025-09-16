@@ -26,6 +26,7 @@ interface AuthActions {
   mcpValidatedSignOut: () => Promise<void>
   mcpValidateSession: () => Promise<boolean>
   forceAuthSync: () => Promise<void>
+  updateAuthStateSync: (user: User) => Promise<void>
 }
 
 type AuthStore = AuthState & AuthActions
@@ -622,6 +623,75 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       })
       
       return false
+    }
+  },
+
+  updateAuthStateSync: async (user: User) => {
+    console.log('🔄 IMMEDIATE AUTH STATE UPDATE for user:', user.id)
+    
+    try {
+      // Immediately set user and authenticated state
+      set({
+        user,
+        isAuthenticated: true,
+        isLoading: false
+      })
+      
+      console.log('✅ Immediate auth state set, now fetching profile...')
+      
+      const supabase = createClient()
+      
+      // Fetch profile immediately 
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      
+      if (profileError) {
+        console.warn('⚠️ Profile fetch failed during immediate update:', profileError)
+        // Don't fail the auth state update just because profile fetch failed
+        return
+      }
+      
+      if (profile) {
+        console.log('✅ Profile fetched during immediate update:', profile.user_type)
+        set({ profile })
+        
+        // Also fetch role-specific profile if needed
+        if (profile.user_type === 'golf_course') {
+          const { data: golfCourseProfile } = await supabase
+            .from('golf_course_profiles')
+            .select('*')
+            .eq('profile_id', user.id)
+            .single()
+          
+          if (golfCourseProfile) {
+            set({ golfCourseProfile })
+          }
+        } else if (profile.user_type === 'professional') {
+          const { data: professionalProfile } = await supabase
+            .from('professional_profiles')
+            .select('*')
+            .eq('profile_id', user.id)
+            .single()
+          
+          if (professionalProfile) {
+            set({ professionalProfile })
+          }
+        }
+      }
+      
+      console.log('🎉 Immediate auth state update completed successfully')
+      
+    } catch (error) {
+      console.error('❌ Immediate auth state update failed:', error)
+      // Still keep the user authenticated even if profile fetch fails
+      set({
+        user,
+        isAuthenticated: true,
+        isLoading: false
+      })
     }
   },
 

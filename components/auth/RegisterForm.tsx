@@ -232,8 +232,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                     {...register('course_name')}
                     disabled={isLoading}
                   />
-                  {errors.course_name && (
-                    <p className="text-sm text-destructive">{errors.course_name.message}</p>
+                  {(errors as any).course_name && (
+                    <p className="text-sm text-destructive">{(errors as any).course_name.message}</p>
                   )}
                 </div>
 
@@ -253,8 +253,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                       <SelectItem value="municipal">Municipal</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.course_type && (
-                    <p className="text-sm text-destructive">{errors.course_type.message}</p>
+                  {(errors as any).course_type && (
+                    <p className="text-sm text-destructive">{(errors as any).course_type.message}</p>
                   )}
                 </div>
               </div>
@@ -267,8 +267,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                   {...register('address')}
                   disabled={isLoading}
                 />
-                {errors.address && (
-                  <p className="text-sm text-destructive">{errors.address.message}</p>
+                {(errors as any).address && (
+                  <p className="text-sm text-destructive">{(errors as any).address.message}</p>
                 )}
               </div>
 
@@ -280,8 +280,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                   {...register('description')}
                   disabled={isLoading}
                 />
-                {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description.message}</p>
+                {(errors as any).description && (
+                  <p className="text-sm text-destructive">{(errors as any).description.message}</p>
                 )}
               </div>
             </>
@@ -303,8 +303,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                       <SelectItem value="expert">Expert (5+ years)</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.experience_level && (
-                    <p className="text-sm text-destructive">{errors.experience_level.message}</p>
+                  {(errors as any).experience_level && (
+                    <p className="text-sm text-destructive">{(errors as any).experience_level.message}</p>
                   )}
                 </div>
 
@@ -318,8 +318,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                     {...register('hourly_rate', { valueAsNumber: true })}
                     disabled={isLoading}
                   />
-                  {errors.hourly_rate && (
-                    <p className="text-sm text-destructive">{errors.hourly_rate.message}</p>
+                  {(errors as any).hourly_rate && (
+                    <p className="text-sm text-destructive">{(errors as any).hourly_rate.message}</p>
                   )}
                 </div>
               </div>
@@ -341,8 +341,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                     </div>
                   ))}
                 </div>
-                {errors.specializations && (
-                  <p className="text-sm text-destructive">{errors.specializations.message}</p>
+                {(errors as any).specializations && (
+                  <p className="text-sm text-destructive">{(errors as any).specializations.message}</p>
                 )}
               </div>
 
@@ -355,8 +355,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                   {...register('travel_radius', { valueAsNumber: true })}
                   disabled={isLoading}
                 />
-                {errors.travel_radius && (
-                  <p className="text-sm text-destructive">{errors.travel_radius.message}</p>
+                {(errors as any).travel_radius && (
+                  <p className="text-sm text-destructive">{(errors as any).travel_radius.message}</p>
                 )}
               </div>
 
@@ -368,8 +368,8 @@ export function RegisterForm({ userType }: RegisterFormProps) {
                   {...register('bio')}
                   disabled={isLoading}
                 />
-                {errors.bio && (
-                  <p className="text-sm text-destructive">{errors.bio.message}</p>
+                {(errors as any).bio && (
+                  <p className="text-sm text-destructive">{(errors as any).bio.message}</p>
                 )}
               </div>
             </>

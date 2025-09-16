@@ -53,15 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user)
           setLoading(false) // Critical: Set loading to false immediately
           
-          // Then refresh profile data
-          try {
-            console.log('🔄 Refreshing user profile...')
-            await refreshSession()
-            console.log('✅ Profile refresh completed')
-          } catch (error) {
-            console.error('❌ Profile refresh failed:', error)
-            // Don't set loading back to true on profile error
-          }
+          // Then refresh profile data in background - don't await
+          refreshSession().catch(error => {
+            console.error('❌ Background profile refresh failed:', error)
+            // Don't affect auth state on background refresh failure
+          })
         } else {
           console.error('❌ SIGNED_IN event but no user in session!')
           setLoading(false)
@@ -141,9 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session.user)
         setLoading(false)
         
-        // Also refresh the profile
+        // Also refresh the profile in background
         refreshSession().catch(error => {
           console.error('❌ Initial profile refresh failed:', error)
+          // Don't affect auth state on background refresh failure
         })
       } else {
         console.log('❌ No existing session found')

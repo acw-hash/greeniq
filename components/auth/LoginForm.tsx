@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { useUIStore } from '@/lib/stores/uiStore'
+import { useAuthStore } from '@/lib/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,8 +17,10 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react'
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [formError, setFormError] = useState('')
   const router = useRouter()
   const { addToast } = useUIStore()
+  const { updateAuthStateSync } = useAuthStore()
 
   const {
     register,
@@ -28,7 +31,21 @@ export function LoginForm() {
   })
 
   const onSubmit = async (data: LoginInput) => {
+    console.log('🎯 Form submission started, isLoading:', isLoading)
+    
+    // Prevent double submissions
+    if (isLoading) {
+      console.log('🚫 Login already in progress, ignoring duplicate submission')
+      return
+    }
+
+    // Clear any previous errors
+    setFormError('')
     setIsLoading(true)
+    
+    console.log('🎯 Loading state set to true, button should be disabled')
+    console.log('🎯 Button disabled state check will happen on next render')
+    
     const supabase = createClient()
 
     try {
@@ -49,6 +66,7 @@ export function LoginForm() {
           errorMessage = 'Please confirm your email address before signing in. Check your inbox for a confirmation link.'
         }
         
+        setFormError(errorMessage)
         addToast({
           variant: 'destructive',
           title: 'Login failed',
@@ -62,33 +80,40 @@ export function LoginForm() {
         email: authData.user?.email
       })
 
+      // CRITICAL: Update auth state immediately with the authenticated user
+      console.log('🔄 Updating auth state immediately with authenticated user...')
+      await updateAuthStateSync(authData.user)
+      
+      // Small delay to ensure React state updates have propagated
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      console.log('🔐 Auth state updated, verifying current state...')
+      const currentState = useAuthStore.getState()
+      console.log('📊 Current auth state after sync:', {
+        isAuthenticated: currentState.isAuthenticated,
+        hasUser: !!currentState.user,
+        userId: currentState.user?.id,
+        hasProfile: !!currentState.profile,
+        profileType: currentState.profile?.user_type
+      })
+
       addToast({
         variant: 'success',
         title: 'Welcome back!',
         description: 'Redirecting to your dashboard...',
       })
 
-      // Force auth sync as backup in case listener doesn't fire
-      try {
-        const { useAuthStore } = await import('@/lib/stores/authStore')
-        console.log('🔧 Calling force auth sync as backup...')
-        await useAuthStore.getState().forceAuthSync()
-        console.log('✅ Force auth sync completed')
-      } catch (syncError) {
-        console.warn('⚠️ Force auth sync failed:', syncError)
-      }
-
-      // Redirect to dashboard
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 500)
+      console.log('🔄 Auth state updated, now redirecting to dashboard...')
+      router.push('/dashboard')
 
     } catch (error) {
       console.error('💥 Unexpected login error:', error)
+      const errorMessage = 'An unexpected error occurred. Please try again.'
+      setFormError(errorMessage)
       addToast({
         variant: 'destructive',
         title: 'Login failed',
-        description: 'An unexpected error occurred. Please try again.',
+        description: errorMessage,
       })
     } finally {
       setIsLoading(false)
@@ -96,20 +121,40 @@ export function LoginForm() {
   }
 
   const signInWithGoogle = async () => {
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    // Prevent double submissions
+    if (isLoading) {
+      console.log('🚫 OAuth login already in progress, ignoring duplicate submission')
+      return
+    }
 
-    if (error) {
+    setIsLoading(true)
+    const supabase = createClient()
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        addToast({
+          variant: 'destructive',
+          title: 'OAuth Error',
+          description: error.message,
+        })
+        setIsLoading(false)
+      }
+      // Note: Don't set loading to false on success as user will be redirected
+    } catch (error) {
+      console.error('💥 OAuth error:', error)
       addToast({
         variant: 'destructive',
         title: 'OAuth Error',
-        description: error.message,
+        description: 'Failed to initiate Google sign-in. Please try again.',
       })
+      setIsLoading(false)
     }
   }
 
@@ -122,7 +167,12 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" style={{ opacity: isLoading ? 0.7 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
+          {formError && (
+            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+              {formError}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -169,7 +219,7 @@ export function LoginForm() {
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>
 
