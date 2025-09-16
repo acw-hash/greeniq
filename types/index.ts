@@ -1,2 +1,2 @@
-import { Database } from './database'
+import { Database } from '@/types/database'
 export type { Database }
