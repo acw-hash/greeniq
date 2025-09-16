@@ -29,7 +29,7 @@ import {
   type GolfCourseProfileInput,
   type ProfessionalProfileInput
 } from '@/lib/validations/profile'
-import type { Database } from '@/types/database'
+import type { Database } from '@/types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type GolfCourseProfile = Database['public']['Tables']['golf_course_profiles']['Row']

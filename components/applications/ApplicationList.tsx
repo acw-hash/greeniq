@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ApplicationCard } from './ApplicationCard'
 import { useDebounce } from 'use-debounce'
-import type { Database } from '@/types/database'
+import type { Database } from '@/types'
 
 type Application = Database['public']['Tables']['applications']['Row'] & {
   professional_profile?: Database['public']['Tables']['professional_profiles']['Row'] & {

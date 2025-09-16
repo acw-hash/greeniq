@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { ProfileAvatar, getInitials } from './ProfileAvatar'
-import type { Database } from '@/types/database'
+import type { Database } from '@/types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type GolfCourseProfile = Database['public']['Tables']['golf_course_profiles']['Row']

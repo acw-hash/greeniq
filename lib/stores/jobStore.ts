@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Database } from '@/types/database'
+import type { Database } from '@/types'
 import type { JobFilters } from '@/lib/validations/jobs'
 
 type Job = Database['public']['Tables']['jobs']['Row'] & {
