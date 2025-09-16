@@ -67,7 +67,6 @@ coverage/
 # =================
 # Generated TypeScript types from Supabase
 types/supabase.ts
-types/database.ts
 database.types.ts
 
 # Local Supabase development files
