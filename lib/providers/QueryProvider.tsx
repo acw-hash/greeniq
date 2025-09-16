@@ -56,7 +56,7 @@ export const getQueryClient = () => {
   }
   
   // On client, use existing instance
-  return window.__REACT_QUERY_CLIENT__ || new QueryClient()
+  return (window as any).__REACT_QUERY_CLIENT__ || new QueryClient()
 }
 
 // Store query client globally for access from stores

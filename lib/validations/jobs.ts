@@ -81,6 +81,8 @@ export const jobFiltersSchema = z.object({
   max_rate: z.number().positive().optional(),
   certifications: z.array(z.string()).optional(),
   urgency_level: urgencyLevelEnum.optional(),
+  required_experience: z.enum(['entry', 'intermediate', 'expert']).optional(),
+  status: z.string().optional(),
   search: z.string().optional()
 })
 

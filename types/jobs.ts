@@ -38,15 +38,17 @@ export interface CreateJobData {
 
 export interface JobFilters {
   location?: string
-  job_type?: string
+  job_type?: 'greenskeeping' | 'equipment_operation' | 'irrigation_maintenance' | 'landscaping' | 'general_maintenance'
   max_distance?: number
   min_rate?: number
   max_rate?: number
   certifications?: string[]
-  urgency_level?: string[]
+  urgency_level?: 'high' | 'normal' | 'emergency'
   start_date?: string
   end_date?: string
   search?: string
+  required_experience?: string
+  status?: string
 }
 
 export interface CreateApplicationData {

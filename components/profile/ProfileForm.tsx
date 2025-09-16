@@ -194,13 +194,25 @@ export function ProfileForm({
         <TabsContent value="details" className="space-y-4">
           {profile.user_type === 'golf_course' ? (
             <GolfCourseForm
-              initialData={golfCourseProfile || undefined}
+              initialData={golfCourseProfile ? {
+                course_name: golfCourseProfile.course_name,
+                address: golfCourseProfile.address,
+                course_type: golfCourseProfile.course_type || undefined,
+                description: golfCourseProfile.description || undefined,
+                facilities: golfCourseProfile.facilities as any || undefined,
+                preferred_qualifications: golfCourseProfile.preferred_qualifications,
+              } : undefined}
               onSubmit={handleGolfCourseSubmit}
               isLoading={updateGolfCourseProfile.isPending}
             />
           ) : (
             <ProfessionalForm
-              initialData={professionalProfile || undefined}
+              initialData={professionalProfile ? {
+                ...professionalProfile,
+                experience_level: professionalProfile.experience_level || undefined,
+                bio: professionalProfile.bio || undefined,
+                hourly_rate: professionalProfile.hourly_rate || undefined,
+              } : undefined}
               onSubmit={handleProfessionalSubmit}
               isLoading={updateProfessionalProfile.isPending}
             />

@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
   try {
     const supabase = await createClient()
 
@@ -15,7 +17,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         status: 'unhealthy',
         database: 'error',
-        error: error.message
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
       }, { status: 500 })
     }
 
@@ -23,13 +27,17 @@ export async function GET(request: NextRequest) {
       status: 'healthy',
       database: 'connected',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV
+      environment: process.env.NODE_ENV,
+      version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     })
   } catch (error: any) {
     console.error('Health check failed:', error)
     return NextResponse.json({
       status: 'unhealthy',
-      error: error.message
+      database: 'unknown',
+      error: error.message,
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
     }, { status: 500 })
   }
 }
