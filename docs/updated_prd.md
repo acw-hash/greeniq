@@ -1,8 +1,8 @@
-# GreenCrew Product Requirements Document
+# GreenIQ Product Requirements Document
 
 ## Executive Summary
 
-GreenCrew is an on-demand peer-to-peer platform that connects golf courses with certified turf and golf maintenance professionals. The platform addresses the critical need for flexible, qualified staffing in golf course maintenance by enabling golf courses to quickly find skilled greenskeepers and maintenance workers while providing professionals with flexible earning opportunities.
+GreenIQ is an on-demand peer-to-peer platform that connects golf courses with certified turf and golf maintenance professionals. The platform addresses the critical need for flexible, qualified staffing in golf course maintenance by enabling golf courses to quickly find skilled greenskeepers and maintenance workers while providing professionals with flexible earning opportunities.
 
 ## Product Overview
 
@@ -10,7 +10,7 @@ GreenCrew is an on-demand peer-to-peer platform that connects golf courses with 
 To become the leading marketplace for golf course maintenance staffing, enabling seamless connections between golf facilities and skilled maintenance professionals while maintaining the highest standards of course quality and care.
 
 ### Mission Statement
-GreenCrew empowers golf courses to maintain exceptional playing conditions through instant access to qualified maintenance professionals, while providing skilled workers with flexible, well-compensated opportunities in the golf industry.
+GreenIQ empowers golf courses to maintain exceptional playing conditions through instant access to qualified maintenance professionals, while providing skilled workers with flexible, well-compensated opportunities in the golf industry.
 
 ## Technology Architecture
 

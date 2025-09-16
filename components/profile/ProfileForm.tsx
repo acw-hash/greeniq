@@ -16,9 +16,11 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form'
-import { FileUpload } from './FileUpload'
+import { AvatarUpload } from './AvatarUpload'
+import { ProfileAvatar } from './ProfileAvatar'
 import { GolfCourseForm } from './GolfCourseForm'
 import { ProfessionalForm } from './ProfessionalForm'
+import { FileUpload } from './FileUpload'
 import { useUpdateProfile, useUpdateGolfCourseProfile, useUpdateProfessionalProfile, useUploadProfileImage } from '@/lib/hooks/useProfile'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { 
@@ -102,6 +104,11 @@ export function ProfileForm({
 
   const handleImageRemove = () => {
     setProfileImage(null)
+  }
+
+  const handleAvatarUploadSuccess = (avatarUrl: string) => {
+    // Update local state if needed
+    if (onSuccess) onSuccess()
   }
 
   return (
@@ -204,16 +211,12 @@ export function ProfileForm({
         <TabsContent value="media" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Image</CardTitle>
+              <CardTitle>Profile Picture</CardTitle>
             </CardHeader>
             <CardContent>
-              <FileUpload
-                onFileSelect={handleImageUpload}
-                onFileRemove={handleImageRemove}
-                accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] }}
-                maxSize={5 * 1024 * 1024} // 5MB
-                value={profileImage}
-                disabled={uploadImage.isPending}
+              <AvatarUpload
+                currentAvatar={profile.avatar_url}
+                onUploadSuccess={handleAvatarUploadSuccess}
               />
             </CardContent>
           </Card>

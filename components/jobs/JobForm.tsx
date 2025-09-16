@@ -29,7 +29,7 @@ import {
   CERTIFICATIONS,
   type CreateJobInput 
 } from '@/lib/validations/jobs'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 
 interface JobFormProps {
   initialData?: Partial<CreateJobInput>

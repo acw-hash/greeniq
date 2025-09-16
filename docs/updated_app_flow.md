@@ -1,8 +1,8 @@
-# GreenCrew Application Flow Document - Next.js Implementation
+# GreenIQ Application Flow Document - Next.js Implementation
 
 ## Overview
 
-This document outlines the complete application flow for GreenCrew using Next.js 14 with App Router, Supabase for database and authentication, and Vercel deployment. All flows are optimized for the modern web architecture with server-side rendering, real-time updates, and seamless user experience.
+This document outlines the complete application flow for GreenIQ using Next.js 14 with App Router, Supabase for database and authentication, and Vercel deployment. All flows are optimized for the modern web architecture with server-side rendering, real-time updates, and seamless user experience.
 
 ## Technology Context
 
@@ -578,4 +578,4 @@ export function useOptimizedSubscription(table: string, filters: any) {
 - **Supabase**: Database-level caching for frequently accessed data
 - **Vercel Edge**: CDN caching for global performance
 
-This comprehensive flow document provides the blueprint for implementing GreenCrew's user experience using modern Next.js architecture with real-time capabilities, ensuring optimal performance and user satisfaction.
+This comprehensive flow document provides the blueprint for implementing GreenIQ's user experience using modern Next.js architecture with real-time capabilities, ensuring optimal performance and user satisfaction.

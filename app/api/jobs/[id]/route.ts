@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: job, error } = await supabase
       .from('jobs')
@@ -19,12 +19,14 @@ export async function GET(
           email,
           phone
         ),
-        golf_course_profile:golf_course_profiles!course_id(
-          course_name,
-          course_type,
-          address,
-          description,
-          facilities
+        golf_course_profile:profiles!course_id(
+          golf_course_profiles(
+            course_name,
+            course_type,
+            address,
+            description,
+            facilities
+          )
         )
       `)
       .eq('id', params.id)
@@ -52,7 +54,7 @@ export async function GET(
         .from('applications')
         .select(`
           *,
-          professional_profile:professional_profiles!professional_id(
+          professional_profile:professional_profiles!inner(
             *,
             profile:profiles!profile_id(
               full_name,
@@ -86,7 +88,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -137,10 +139,12 @@ export async function PUT(
           email,
           phone
         ),
-        golf_course_profile:golf_course_profiles!course_id(
-          course_name,
-          course_type,
-          address
+        golf_course_profile:profiles!course_id(
+          golf_course_profiles(
+            course_name,
+            course_type,
+            address
+          )
         )
       `)
       .single()
@@ -168,7 +172,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

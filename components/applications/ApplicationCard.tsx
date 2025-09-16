@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatDistanceToNow } from 'date-fns'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
 
 type Application = Database['public']['Tables']['applications']['Row'] & {

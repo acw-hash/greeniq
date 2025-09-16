@@ -1,8 +1,8 @@
 import { LoginForm } from '@/components/auth/LoginForm'
 
 export const metadata = {
-  title: 'Sign In - GreenCrew',
-  description: 'Sign in to your GreenCrew account',
+  title: 'Sign In - GreenIQ',
+  description: 'Sign in to your GreenIQ account',
 }
 
 export default function LoginPage() {

@@ -2,7 +2,7 @@ import { RegisterForm } from '@/components/auth/RegisterForm'
 import { RegistrationErrorBoundary } from '@/components/auth/RegistrationErrorBoundary'
 
 export const metadata = {
-  title: 'Professional Registration - GreenCrew',
+  title: 'Professional Registration - GreenIQ',
   description: 'Register as a maintenance professional to find golf course jobs',
 }
 

@@ -198,7 +198,7 @@ export function setupEmailTesting() {
     return
   }
 
-  console.log('📧 GreenCrew Email Testing Utilities')
+  console.log('📧 GreenIQ Email Testing Utilities')
   console.log('Use these commands in the browser console:')
   console.log('')
   console.log('// Test email functionality:')

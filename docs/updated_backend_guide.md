@@ -1,6 +1,6 @@
-# GreenCrew Backend Architecture Guide - Next.js Full-Stack
+# GreenIQ Backend Architecture Guide - Next.js Full-Stack
 
-This guide provides a comprehensive overview of the GreenCrew backend architecture using Next.js 14 App Router with integrated API routes and Supabase infrastructure.
+This guide provides a comprehensive overview of the GreenIQ backend architecture using Next.js 14 App Router with integrated API routes and Supabase infrastructure.
 
 ---
 
@@ -795,7 +795,7 @@ describe('/api/jobs', () => {
 
 ## 📋 Summary for New Engineers
 
-GreenCrew backend architecture leverages:
+GreenIQ backend architecture leverages:
 
 - **Next.js 14 App Router** for full-stack development
 - **Supabase** for database, auth, real-time, and storage

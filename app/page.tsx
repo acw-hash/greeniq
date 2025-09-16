@@ -12,9 +12,9 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">GC</span>
+              <span className="text-white font-bold text-sm">GI</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">GreenCrew</span>
+            <span className="text-xl font-bold text-gray-900">GreenIQ</span>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="#features" className="text-gray-600 hover:text-gray-900">
@@ -246,7 +246,7 @@ export default function LandingPage() {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              How GreenCrew Works
+              How GreenIQ Works
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Simple, fast, and efficient. Get your maintenance needs fulfilled in just a few steps.
@@ -366,7 +366,7 @@ export default function LandingPage() {
             Ready to Transform Your Golf Course Maintenance?
           </h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Join thousands of golf courses and maintenance professionals who trust GreenCrew 
+            Join thousands of golf courses and maintenance professionals who trust GreenIQ 
             for their staffing needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -391,9 +391,9 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">GC</span>
+                  <span className="text-white font-bold text-xs">GI</span>
                 </div>
-                <span className="text-lg font-bold">GreenCrew</span>
+                <span className="text-lg font-bold">GreenIQ</span>
               </div>
               <p className="text-gray-400">
                 The premier marketplace connecting golf courses with qualified maintenance professionals.
@@ -429,7 +429,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400">
-              © 2024 GreenCrew. All rights reserved.
+              © 2024 GreenIQ. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="#" className="text-gray-400 hover:text-white">Privacy Policy</Link>

@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, File, Image, CheckCircle, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void

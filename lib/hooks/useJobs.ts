@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { useUIStore } from '@/lib/stores/uiStore'
-import type { JobFilters, CreateJobInput, CreateApplicationInput } from '@/lib/validations/jobs'
+import type { JobFilters, CreateJobData, CreateApplicationData } from '@/lib/validations/jobs'
 
 export function useJobs(filters?: JobFilters) {
   return useQuery({
@@ -57,7 +57,7 @@ export function useCreateJob() {
   const { addToast } = useUIStore()
   
   return useMutation({
-    mutationFn: async (data: CreateJobInput) => {
+    mutationFn: async (data: CreateJobData) => {
       const response = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,7 +94,7 @@ export function useJobApplication() {
   const { addToast } = useUIStore()
   
   return useMutation({
-    mutationFn: async (data: CreateApplicationInput) => {
+    mutationFn: async (data: CreateApplicationData) => {
       const response = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

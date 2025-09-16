@@ -201,7 +201,7 @@ export function setupRegistrationTesting() {
     return
   }
 
-  console.log('🧪 GreenCrew Registration Testing')
+  console.log('🧪 GreenIQ Registration Testing')
   console.log('Use this command in the browser console:')
   console.log('')
   console.log('testRegistrationFix()')

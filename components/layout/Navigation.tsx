@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 import { 
   Home, 
   Briefcase, 

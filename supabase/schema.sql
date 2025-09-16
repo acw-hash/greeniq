@@ -9,6 +9,7 @@ CREATE TABLE profiles (
   full_name text,
   email text,
   phone text,
+  avatar_url text,
   location point,
   is_verified boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),

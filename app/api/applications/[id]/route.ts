@@ -21,11 +21,16 @@ export async function GET(
         *,
         jobs!inner(
           *,
-          golf_course_profiles!inner(course_name, address)
+          profiles!course_id(
+            *,
+            golf_course_profiles(course_name, address)
+          )
         ),
-        professional_profiles!inner(
-          *,
-          profiles!inner(full_name, email, phone)
+        profiles!professional_id(
+          full_name,
+          email,
+          phone,
+          professional_profiles(*)
         )
       `)
       .eq('id', params.id)
@@ -102,10 +107,13 @@ export async function PUT(
         *,
         jobs!inner(
           title,
-          golf_course_profiles!inner(course_name)
+          profiles!course_id(
+            golf_course_profiles(course_name)
+          )
         ),
-        professional_profiles!inner(
-          profiles!inner(full_name)
+        profiles!professional_id(
+          full_name,
+          professional_profiles(*)
         )
       `)
       .single()

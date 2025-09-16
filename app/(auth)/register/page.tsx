@@ -4,15 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, Shield } from 'lucide-react'
 
 export const metadata = {
-  title: 'Sign Up - GreenCrew',
-  description: 'Create your GreenCrew account',
+  title: 'Sign Up - GreenIQ',
+  description: 'Create your GreenIQ account',
 }
 
 export default function RegisterPage() {
   return (
     <div className="w-full max-w-2xl space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Join GreenCrew</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Join GreenIQ</h1>
         <p className="text-gray-600">Choose your account type to get started</p>
       </div>
 

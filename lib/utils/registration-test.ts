@@ -115,7 +115,7 @@ export function runRegistrationTests() {
     return
   }
 
-  console.log('🧪 GreenCrew Registration Testing Utilities')
+  console.log('🧪 GreenIQ Registration Testing Utilities')
   console.log('Use these commands in the browser console:')
   console.log('')
   console.log('// Quick comprehensive test (RECOMMENDED):')

@@ -1,6 +1,6 @@
-# GreenCrew Technical Implementation Plan - Next.js Full-Stack Architecture
+# GreenIQ Technical Implementation Plan - Next.js Full-Stack Architecture
 
-This document serves as the authoritative implementation guide for Cursor AI to build the GreenCrew platform using Next.js 14 App Router with Supabase backend. This plan ensures architectural integrity, rapid development, and zero-tolerance for functional errors.
+This document serves as the authoritative implementation guide for Cursor AI to build the GreenIQ platform using Next.js 14 App Router with Supabase backend. This plan ensures architectural integrity, rapid development, and zero-tolerance for functional errors.
 
 ## 🗂️ Architecture Overview
 
@@ -16,7 +16,7 @@ This document serves as the authoritative implementation guide for Cursor AI to 
 ## 📁 Project Structure (Monorepo)
 
 ```
-greencrew/
+greeniq/
 ├── app/                          # Next.js App Router
 │   ├── (auth)/                   # Auth route group
 │   │   ├── login/
@@ -905,5 +905,5 @@ NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
 - All forms must include client and server validation
 - All real-time features must handle connection errors
 
-This technical implementation plan provides a comprehensive roadmap for building GreenCrew using Next.js 14 with Supabase, ensuring a robust, scalable, and secure marketplace platform.
+This technical implementation plan provides a comprehensive roadmap for building GreenIQ using Next.js 14 with Supabase, ensuring a robust, scalable, and secure marketplace platform.
    

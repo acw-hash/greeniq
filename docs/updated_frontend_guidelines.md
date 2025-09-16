@@ -1,4 +1,4 @@
-# GreenCrew Frontend Engineering Guidelines - Next.js 14
+# GreenIQ Frontend Engineering Guidelines - Next.js 14
 
 ## Table of Contents
 1. [Project Structure & File Organization](#project-structure--file-organization)
@@ -148,7 +148,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'GreenCrew - Golf Course Maintenance Marketplace',
+  title: 'GreenIQ - Golf Course Maintenance Marketplace',
   description: 'Connect golf courses with qualified maintenance professionals',
 }
 
@@ -295,7 +295,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   if (!job) return {}
   
   return {
-    title: `${job.title} - GreenCrew`,
+    title: `${job.title} - GreenIQ`,
     description: job.description.slice(0, 160),
   }
 }

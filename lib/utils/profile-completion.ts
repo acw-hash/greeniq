@@ -102,7 +102,7 @@ export function setupProfileCompletionHelpers() {
     return
   }
 
-  console.log('🔧 GreenCrew Profile Completion Utilities')
+  console.log('🔧 GreenIQ Profile Completion Utilities')
   console.log('Use these commands in the browser console:')
   console.log('')
   console.log('// Check user status:')

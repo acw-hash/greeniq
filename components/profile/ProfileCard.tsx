@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { ProfileAvatar, getInitials } from './ProfileAvatar'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -177,13 +178,13 @@ export function ProfileCard({
       <CardHeader className="space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center">
-              {profile.user_type === 'golf_course' ? (
-                <Building className="h-8 w-8 text-muted-foreground" />
-              ) : (
-                <User className="h-8 w-8 text-muted-foreground" />
-              )}
-            </div>
+            <ProfileAvatar
+              src={profile.avatar_url}
+              alt={`${profile.full_name}'s profile picture`}
+              size="lg"
+              fallbackInitials={getInitials(profile.full_name)}
+              showBorder={true}
+            />
             <div>
               <CardTitle className="text-xl">{profile.full_name}</CardTitle>
               <p className="text-sm text-muted-foreground capitalize">

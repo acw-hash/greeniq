@@ -1,4 +1,4 @@
-# GreenCrew Technology Stack - Next.js Full-Stack Architecture
+# GreenIQ Technology Stack - Next.js Full-Stack Architecture
 
 ## Executive Summary
 
@@ -270,7 +270,7 @@ This technology stack leverages **Next.js 14 App Router** for a unified full-sta
 ## File Structure
 
 ```
-greencrew/
+greeniq/
 ├── app/                          # Next.js App Router
 │   ├── (auth)/                   # Authentication routes
 │   ├── (dashboard)/              # Protected routes
@@ -476,5 +476,5 @@ NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
 - **User engagement**: 60% monthly retention
 - **Platform efficiency**: <5% customer support tickets
 
-This technology stack provides a robust, scalable foundation for GreenCrew while maintaining cost efficiency and development velocity throughout the growth journey.
+This technology stack provides a robust, scalable foundation for GreenIQ while maintaining cost efficiency and development velocity throughout the growth journey.
   

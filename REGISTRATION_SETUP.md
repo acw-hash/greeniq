@@ -1,4 +1,4 @@
-# GreenCrew Registration Setup & Troubleshooting
+# GreenIQ Registration Setup & Troubleshooting
 
 ## Quick Setup
 

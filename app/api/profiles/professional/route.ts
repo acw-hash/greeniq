@@ -4,7 +4,7 @@ import { professionalProfileSchema } from '@/lib/validations/profile'
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()

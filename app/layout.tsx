@@ -4,14 +4,18 @@ import { QueryProvider } from '@/lib/providers/QueryProvider'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthDebugger } from '@/components/debug/AuthDebugger'
 import { AuthFlowTester } from '@/components/debug/AuthFlowTester'
-import '@/lib/utils/auth-debug' // Load auth debugging utilities
+import { AuthDebugLoader } from '@/components/debug/AuthDebugLoader'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'GreenCrew - Golf Course Maintenance Marketplace',
+  title: 'GreenIQ - Golf Course Maintenance Marketplace',
   description: 'Connect golf courses with qualified maintenance professionals',
+  metadataBase: new URL('https://greeniq.app'),
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
@@ -28,6 +32,7 @@ export default function RootLayout({
             <Toaster />
             {process.env.NODE_ENV === 'development' && (
               <>
+                <AuthDebugLoader />
                 <AuthDebugger />
                 <AuthFlowTester />
               </>

@@ -1,8 +1,8 @@
-# GreenCrew Technical Roadmap – Next.js Full-Stack Architecture
+# GreenIQ Technical Roadmap – Next.js Full-Stack Architecture
 
 ## Context
 
-GreenCrew is a vertically integrated gig marketplace tailored specifically for golf course maintenance jobs. The platform uses a modern Next.js 14 full-stack architecture with Supabase for database and authentication, deployed on Vercel with automatic custom domain configuration.
+GreenIQ is a vertically integrated gig marketplace tailored specifically for golf course maintenance jobs. The platform uses a modern Next.js 14 full-stack architecture with Supabase for database and authentication, deployed on Vercel with automatic custom domain configuration.
 
 **Technology Stack:**
 - **Frontend + Backend**: Next.js 14 (App Router) with API routes
@@ -275,7 +275,7 @@ reports: id, reporter_id, reported_id, report_type, description, status, created
 ## File Structure & Organization
 
 ```
-greencrew/
+greeniq/
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/page.tsx
@@ -408,4 +408,4 @@ POSTHOG_API_KEY=your_posthog_key
 4. Merge to main triggers automatic Vercel deployment
 5. Post-deployment monitoring and validation
 
-This roadmap provides a comprehensive implementation plan for building GreenCrew using modern Next.js architecture with Supabase, optimized for rapid development and scalable growth.
+This roadmap provides a comprehensive implementation plan for building GreenIQ using modern Next.js architecture with Supabase, optimized for rapid development and scalable growth.
