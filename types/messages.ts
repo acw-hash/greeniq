@@ -1,4 +1,4 @@
-import { Database } from './database'
+import { Database } from '@/types/database'
 
 export type Message = Database['public']['Tables']['messages']['Row'] & {
   sender?: Database['public']['Tables']['profiles']['Row']
