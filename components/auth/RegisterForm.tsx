@@ -327,7 +327,7 @@ export function RegisterForm({ userType }: RegisterFormProps) {
               <div className="space-y-2">
                 <Label>Specializations</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {specializations.map((spec) => (
+                  {specializations.map((spec: string) => (
                     <div key={spec} className="flex items-center space-x-2">
                       <Checkbox
                         id={spec}

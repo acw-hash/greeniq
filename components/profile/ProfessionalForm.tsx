@@ -122,7 +122,7 @@ export function ProfessionalForm({
                     Select your areas of expertise (at least one required)
                   </FormDescription>
                   <div className="grid grid-cols-2 gap-3">
-                    {SPECIALIZATIONS.map((specialization) => (
+                    {SPECIALIZATIONS.map((specialization: string) => (
                       <FormField
                         key={specialization}
                         control={form.control}
@@ -178,7 +178,7 @@ export function ProfessionalForm({
                     Select equipment you're experienced with
                   </FormDescription>
                   <div className="grid grid-cols-2 gap-3">
-                    {EQUIPMENT_SKILLS.map((skill) => (
+                    {EQUIPMENT_SKILLS.map((skill: string) => (
                       <FormField
                         key={skill}
                         control={form.control}

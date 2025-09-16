@@ -376,7 +376,7 @@ export function AuthFlowTester() {
           {steps.length > 0 && (
             <div className="space-y-3">
               <h4 className="font-medium text-sm">Test Results</h4>
-              {steps.map((step) => (
+              {steps.map((step: any) => (
                 <div key={step.id} className="bg-gray-50 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">

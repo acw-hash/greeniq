@@ -138,7 +138,7 @@ export function JobCard({
                   {job.required_experience.charAt(0).toUpperCase() + job.required_experience.slice(1)} Level
                 </Badge>
               )}
-              {job.required_certifications?.slice(0, 3).map((cert) => (
+              {job.required_certifications?.slice(0, 3).map((cert: string) => (
                 <Badge key={cert} variant="outline" className="text-xs">
                   {cert.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>

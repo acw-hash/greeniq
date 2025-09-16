@@ -72,7 +72,7 @@ export function ProfileCard({
             <div className="flex flex-wrap gap-1">
               {Object.entries(golfCourseProfile.facilities as Record<string, any>)
                 .filter(([_, value]) => value === true)
-                .map(([key]) => (
+                .map(([key]: [string, any]) => (
                   <Badge key={key} variant="secondary" className="text-xs">
                     {key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </Badge>
@@ -85,7 +85,7 @@ export function ProfileCard({
           <div>
             <p className="text-sm font-medium mb-2">Preferred Qualifications</p>
             <div className="flex flex-wrap gap-1">
-              {golfCourseProfile.preferred_qualifications.map((qual) => (
+              {golfCourseProfile.preferred_qualifications.map((qual: string) => (
                 <Badge key={qual} variant="outline" className="text-xs">
                   {qual.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>
@@ -148,7 +148,7 @@ export function ProfileCard({
           <div>
             <p className="text-sm font-medium mb-2">Specializations</p>
             <div className="flex flex-wrap gap-1">
-              {professionalProfile.specializations.map((spec) => (
+              {professionalProfile.specializations.map((spec: string) => (
                 <Badge key={spec} variant="default" className="text-xs">
                   {spec.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>
@@ -161,7 +161,7 @@ export function ProfileCard({
           <div>
             <p className="text-sm font-medium mb-2">Equipment Skills</p>
             <div className="flex flex-wrap gap-1">
-              {professionalProfile.equipment_skills.map((skill) => (
+              {professionalProfile.equipment_skills.map((skill: string) => (
                 <Badge key={skill} variant="secondary" className="text-xs">
                   {skill.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>

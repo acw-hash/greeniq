@@ -26,7 +26,7 @@ export default function JobsPage() {
 function JobsLoading() {
   return (
     <div className="space-y-4">
-      {[...Array(3)].map((_, i) => (
+      {[...Array(3)].map((_: any, i: number) => (
         <div key={i} className="bg-white p-6 rounded-lg shadow animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>

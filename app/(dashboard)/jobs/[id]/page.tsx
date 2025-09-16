@@ -349,7 +349,7 @@ export default function JobDetailPage() {
                       <div className="flex flex-wrap gap-2">
                         {Object.entries(job.golf_course_profile.facilities as Record<string, any>)
                           .filter(([_, value]) => value === true)
-                          .map(([key]) => (
+                          .map(([key]: [string, any]) => (
                             <Badge key={key} variant="secondary" className="text-xs">
                               {key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                             </Badge>

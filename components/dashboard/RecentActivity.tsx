@@ -70,7 +70,7 @@ export async function RecentActivity({ userType, userId }: RecentActivityProps) 
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentJobs?.length ? recentJobs.map((job) => (
+              {recentJobs?.length ? recentJobs.map((job: any) => (
                 <div key={job.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium text-sm">{job.title}</h4>
@@ -111,7 +111,7 @@ export async function RecentActivity({ userType, userId }: RecentActivityProps) 
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentApplications?.length ? recentApplications.map((application) => (
+              {recentApplications?.length ? recentApplications.map((application: any) => (
                 <div key={application.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium text-sm">{application.jobs?.title}</h4>
@@ -184,7 +184,7 @@ export async function RecentActivity({ userType, userId }: RecentActivityProps) 
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentApplications?.length ? recentApplications.map((application) => (
+              {recentApplications?.length ? recentApplications.map((application: any) => (
                 <div key={application.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium text-sm">{application.jobs?.title}</h4>
@@ -226,7 +226,7 @@ export async function RecentActivity({ userType, userId }: RecentActivityProps) 
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentJobs?.length ? recentJobs.map((job) => (
+              {recentJobs?.length ? recentJobs.map((job: any) => (
                 <div key={job.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium text-sm">{job.title}</h4>

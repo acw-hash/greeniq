@@ -113,7 +113,7 @@ export function JobForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {jobTypes.map((type) => (
+                      {jobTypes.map((type: any) => (
                         <SelectItem key={type.value} value={type.value}>
                           <div>
                             <div className="font-medium">
@@ -163,7 +163,7 @@ export function JobForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {urgencyLevels.map((level) => (
+                      {urgencyLevels.map((level: any) => (
                         <SelectItem key={level.value} value={level.value}>
                           <div>
                             <div className="font-medium">
@@ -375,7 +375,7 @@ export function JobForm({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="">No specific requirement</SelectItem>
-                      {experienceLevels.map((level) => (
+                      {experienceLevels.map((level: any) => (
                         <SelectItem key={level.value} value={level.value}>
                           <div>
                             <div className="font-medium">
@@ -403,7 +403,7 @@ export function JobForm({
                     </FormDescription>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {CERTIFICATIONS.map((cert) => (
+                    {CERTIFICATIONS.map((cert: any) => (
                       <FormField
                         key={cert.value}
                         control={form.control}

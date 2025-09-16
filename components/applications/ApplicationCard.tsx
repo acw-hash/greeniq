@@ -113,7 +113,7 @@ export function ApplicationCard({
               <div>
                 <h4 className="text-sm font-medium mb-2">Specializations</h4>
                 <div className="flex flex-wrap gap-1">
-                  {application.professional_profile?.specializations?.slice(0, 3).map((spec) => (
+                  {application.professional_profile?.specializations?.slice(0, 3).map((spec: string) => (
                     <Badge key={spec} variant="outline" className="text-xs">
                       {spec.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </Badge>

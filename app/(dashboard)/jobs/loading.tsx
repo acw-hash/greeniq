@@ -19,7 +19,7 @@ export default function JobsLoading() {
         
         {/* Job cards skeleton */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_: any, i: number) => (
             <div key={i} className="space-y-4 rounded-lg border p-6">
               <div className="space-y-2">
                 <Skeleton className="h-6 w-3/4" />
