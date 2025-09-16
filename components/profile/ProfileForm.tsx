@@ -197,10 +197,10 @@ export function ProfileForm({
               initialData={golfCourseProfile ? {
                 course_name: golfCourseProfile.course_name,
                 address: golfCourseProfile.address,
-                course_type: golfCourseProfile.course_type || undefined,
+                course_type: (golfCourseProfile.course_type as 'public' | 'private' | 'resort' | 'municipal') || undefined,
                 description: golfCourseProfile.description || undefined,
                 facilities: golfCourseProfile.facilities as any || undefined,
-                preferred_qualifications: golfCourseProfile.preferred_qualifications,
+                preferred_qualifications: golfCourseProfile.preferred_qualifications || undefined,
               } : undefined}
               onSubmit={handleGolfCourseSubmit}
               isLoading={updateGolfCourseProfile.isPending}
@@ -209,9 +209,12 @@ export function ProfileForm({
             <ProfessionalForm
               initialData={professionalProfile ? {
                 ...professionalProfile,
-                experience_level: professionalProfile.experience_level || undefined,
+                experience_level: (professionalProfile.experience_level as 'entry' | 'intermediate' | 'expert') || undefined,
                 bio: professionalProfile.bio || undefined,
                 hourly_rate: professionalProfile.hourly_rate || undefined,
+                specializations: professionalProfile.specializations || undefined,
+                equipment_skills: professionalProfile.equipment_skills || undefined,
+                travel_radius: professionalProfile.travel_radius || undefined,
               } : undefined}
               onSubmit={handleProfessionalSubmit}
               isLoading={updateProfessionalProfile.isPending}

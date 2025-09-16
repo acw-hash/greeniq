@@ -81,12 +81,12 @@ export function JobCard({
             </div>
           </div>
           <div className="flex flex-col items-end space-y-2">
-            <Badge variant={getUrgencyColor(job.urgency_level)} className="flex items-center space-x-1">
-              {getUrgencyIcon(job.urgency_level)}
-              <span className="capitalize">{job.urgency_level}</span>
+            <Badge variant={getUrgencyColor(job.urgency_level || 'normal')} className="flex items-center space-x-1">
+              {getUrgencyIcon(job.urgency_level || 'normal')}
+              <span className="capitalize">{job.urgency_level || 'normal'}</span>
             </Badge>
             <div className="text-right">
-              <div className="font-bold text-green-700 dark:text-green-400 text-lg">${job.hourly_rate}/hr</div>
+              <div className="font-bold text-green-700 dark:text-green-400 text-lg">${job.hourly_rate || 0}/hr</div>
             </div>
           </div>
         </div>
@@ -96,10 +96,10 @@ export function JobCard({
         {/* Job Type and Description */}
         <div>
           <Badge variant="secondary" className="mb-2">
-            {formatJobType(job.job_type)}
+            {formatJobType(job.job_type || 'general')}
           </Badge>
           <p className="text-sm text-muted-foreground line-clamp-3">
-            {job.description}
+            {job.description || 'No description provided'}
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export function JobCard({
             <div>
               <div className="font-medium">Start Date</div>
               <div className="text-muted-foreground">
-                {new Date(job.start_date).toLocaleDateString()}
+                {job.start_date ? new Date(job.start_date).toLocaleDateString() : 'TBD'}
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@ export function JobCard({
               <div>
                 <div className="font-medium">End Date</div>
                 <div className="text-muted-foreground">
-                  {new Date(job.end_date).toLocaleDateString()}
+                  {job.end_date ? new Date(job.end_date).toLocaleDateString() : 'TBD'}
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@ export function JobCard({
         </div>
 
         {/* Requirements */}
-        {(job.required_experience || job.required_certifications.length > 0) && (
+        {(job.required_experience || (job.required_certifications && job.required_certifications.length > 0)) && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Requirements</h4>
             <div className="flex flex-wrap gap-1">
@@ -138,14 +138,14 @@ export function JobCard({
                   {job.required_experience.charAt(0).toUpperCase() + job.required_experience.slice(1)} Level
                 </Badge>
               )}
-              {job.required_certifications.slice(0, 3).map((cert) => (
+              {job.required_certifications?.slice(0, 3).map((cert) => (
                 <Badge key={cert} variant="outline" className="text-xs">
                   {cert.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>
               ))}
-              {job.required_certifications.length > 3 && (
+              {job.required_certifications && job.required_certifications.length > 3 && (
                 <Badge variant="outline" className="text-xs">
-                  +{job.required_certifications.length - 3} more
+                  +{job.required_certifications?.length ? job.required_certifications.length - 3 : 0} more
                 </Badge>
               )}
             </div>
@@ -166,7 +166,7 @@ export function JobCard({
       <CardFooter className="pt-4 border-t">
         <div className="flex items-center justify-between w-full">
           <div className="text-xs text-muted-foreground">
-            Posted {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+            Posted {job.created_at ? formatDistanceToNow(new Date(job.created_at), { addSuffix: true }) : 'Unknown date'}
           </div>
           <div className="flex space-x-2">
             <Button

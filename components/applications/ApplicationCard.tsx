@@ -74,10 +74,10 @@ export function ApplicationCard({
           <div className="flex-1">
             {viewMode === 'professional' && application.job && (
               <div>
-                <h3 className="font-semibold text-lg">{application.job.title}</h3>
+                <h3 className="font-semibold text-lg">{application.job?.title || 'Untitled Job'}</h3>
                 {application.job.golf_course_profile && (
                   <p className="text-sm text-muted-foreground">
-                    {application.job.golf_course_profile.course_name}
+                    {application.job?.golf_course_profile?.course_name || 'Unknown Course'}
                   </p>
                 )}
               </div>
@@ -86,21 +86,21 @@ export function ApplicationCard({
             {viewMode === 'golf_course' && application.professional_profile?.profile && (
               <div>
                 <h3 className="font-semibold text-lg">
-                  {application.professional_profile.profile.full_name}
+                  {application.professional_profile?.profile?.full_name || 'Unknown Professional'}
                 </h3>
                 <p className="text-sm text-muted-foreground capitalize">
-                  {application.professional_profile.experience_level} Level Professional
+                  {application.professional_profile?.experience_level || 'Unknown'} Level Professional
                 </p>
               </div>
             )}
           </div>
           
           <Badge 
-            variant={getStatusColor(application.status)}
+            variant={getStatusColor(application.status || 'pending')}
             className="flex items-center space-x-1"
           >
-            {getStatusIcon(application.status)}
-            <span className="capitalize">{application.status}</span>
+            {getStatusIcon(application.status || 'pending')}
+            <span className="capitalize">{application.status || 'pending'}</span>
           </Badge>
         </div>
       </CardHeader>
@@ -109,31 +109,31 @@ export function ApplicationCard({
         {/* Professional Details (for golf course view) */}
         {viewMode === 'golf_course' && application.professional_profile && (
           <div className="space-y-3">
-            {application.professional_profile.specializations && application.professional_profile.specializations.length > 0 && (
+            {application.professional_profile?.specializations && application.professional_profile.specializations.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium mb-2">Specializations</h4>
                 <div className="flex flex-wrap gap-1">
-                  {application.professional_profile.specializations.slice(0, 3).map((spec) => (
+                  {application.professional_profile?.specializations?.slice(0, 3).map((spec) => (
                     <Badge key={spec} variant="outline" className="text-xs">
                       {spec.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </Badge>
                   ))}
-                  {application.professional_profile.specializations.length > 3 && (
+                  {application.professional_profile?.specializations && application.professional_profile.specializations.length > 3 && (
                     <Badge variant="outline" className="text-xs">
-                      +{application.professional_profile.specializations.length - 3} more
+                      +{application.professional_profile?.specializations?.length ? application.professional_profile.specializations.length - 3 : 0} more
                     </Badge>
                   )}
                 </div>
               </div>
             )}
 
-            {application.professional_profile.rating > 0 && (
+            {application.professional_profile?.rating && application.professional_profile.rating > 0 && (
               <div className="flex items-center space-x-4 text-sm">
                 <div>
-                  <span className="font-medium">Rating:</span> {application.professional_profile.rating.toFixed(1)}/5
+                  <span className="font-medium">Rating:</span> {application.professional_profile?.rating?.toFixed(1)}/5
                 </div>
                 <div>
-                  <span className="font-medium">Jobs completed:</span> {application.professional_profile.total_jobs}
+                  <span className="font-medium">Jobs completed:</span> {application.professional_profile?.total_jobs || 0}
                 </div>
               </div>
             )}
@@ -158,7 +158,7 @@ export function ApplicationCard({
             <DollarSign className="h-4 w-4 text-muted-foreground" />
             <span>
               {viewMode === 'professional' && application.job
-                ? formatRate(application.proposed_rate, application.job.hourly_rate)
+                ? formatRate(application.proposed_rate, application.job?.hourly_rate || 0)
                 : application.proposed_rate
                 ? `$${application.proposed_rate}/hr (proposed)`
                 : 'Rate negotiable'
@@ -168,7 +168,7 @@ export function ApplicationCard({
           
           <div className="flex items-center space-x-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>Applied {formatDistanceToNow(new Date(application.applied_at), { addSuffix: true })}</span>
+            <span>Applied {application.applied_at ? formatDistanceToNow(new Date(application.applied_at), { addSuffix: true }) : 'Unknown date'}</span>
           </div>
         </div>
 

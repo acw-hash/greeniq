@@ -106,17 +106,17 @@ export function ProfileCard({
           <div className="flex items-center space-x-2">
             <User className="h-5 w-5 text-muted-foreground" />
             <span className="font-medium capitalize">
-              {professionalProfile.experience_level} Level
+              {professionalProfile.experience_level || 'Unknown'} Level
             </span>
           </div>
-          {professionalProfile.rating > 0 && (
+          {professionalProfile.rating && professionalProfile.rating > 0 && (
             <div className="flex items-center space-x-1">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               <span className="text-sm font-medium">
-                {professionalProfile.rating.toFixed(1)}
+                {professionalProfile.rating?.toFixed(1)}
               </span>
               <span className="text-xs text-muted-foreground">
-                ({professionalProfile.total_jobs} jobs)
+                ({professionalProfile.total_jobs || 0} jobs)
               </span>
             </div>
           )}
@@ -140,7 +140,7 @@ export function ProfileCard({
         <div className="flex items-center space-x-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
-            Within {professionalProfile.travel_radius} miles
+            Within {professionalProfile.travel_radius || 25} miles
           </span>
         </div>
 
@@ -250,7 +250,7 @@ export function ProfileCard({
         <div className="flex items-center space-x-2 pt-4 border-t">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
-            Member since {new Date(profile.created_at).toLocaleDateString()}
+            Member since {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown date'}
           </span>
         </div>
       </CardContent>

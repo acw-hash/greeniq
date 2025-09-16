@@ -54,14 +54,15 @@ export function ApplicationList({
       (viewMode === 'professional' && application.job?.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
       (viewMode === 'golf_course' && application.professional_profile?.profile?.full_name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
 
-    const matchesStatus = statusFilter === 'all' || application.status === statusFilter
+    const matchesStatus = statusFilter === 'all' || (application.status || 'pending') === statusFilter
 
     return matchesSearch && matchesStatus
   })
 
   // Group applications by status for stats
   const statusCounts = applications.reduce((acc, app) => {
-    acc[app.status] = (acc[app.status] || 0) + 1
+    const status = app.status || 'pending'
+    acc[status] = (acc[status] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
