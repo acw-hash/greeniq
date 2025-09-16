@@ -114,7 +114,7 @@ export async function PUT(
     }
     
     // Update application
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('applications')
       .update(validatedData)
       .eq('id', params.id)
@@ -128,15 +128,15 @@ export async function PUT(
     
     // If application is accepted, close the job
     if (validatedData.status === 'accepted' && application.job_id) {
-      await supabase
+      await (supabase as any)
         .from('jobs')
-        .update({ status: 'in_progress' } as any)
+        .update({ status: 'in_progress' })
         .eq('id', application.job_id)
       
       // Reject other pending applications for this job
-      await supabase
+      await (supabase as any)
         .from('applications')
-        .update({ status: 'rejected' } as any)
+        .update({ status: 'rejected' })
         .eq('job_id', application.job_id)
         .neq('id', params.id)
         .eq('status', 'pending')

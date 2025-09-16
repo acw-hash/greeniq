@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
     // Get user profile to determine user type
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type')
+      .select('id, user_type')
       .eq('id', user.id)
-      .single()
+      .single() as { data: { id: string; user_type: string } | null }
     
     let query = supabase.from('applications').select(`
       *,
@@ -85,9 +85,9 @@ export async function POST(request: NextRequest) {
     // Verify user is a professional
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type')
+      .select('id, user_type')
       .eq('id', user.id)
-      .single()
+      .single() as { data: { id: string; user_type: string } | null }
     
     if (profile?.user_type !== 'professional') {
       return NextResponse.json({ error: 'Only professionals can apply to jobs' }, { status: 403 })
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       .from('jobs')
       .select('status')
       .eq('id', validatedData.job_id)
-      .single()
+      .single() as { data: { status: string } | null }
     
     if (!job) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 })
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create application
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('applications')
       .insert({
         job_id: validatedData.job_id,
