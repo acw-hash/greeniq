@@ -1,5 +1,5 @@
 import { User } from '@supabase/supabase-js'
-import { Database } from '@/types/database'
+import { Database } from './index'
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type GolfCourseProfile = Database['public']['Tables']['golf_course_profiles']['Row']

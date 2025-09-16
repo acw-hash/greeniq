@@ -1,4 +1,4 @@
-import { Database } from '@/types/database'
+import { Database } from './index'
 
 export type Job = Database['public']['Tables']['jobs']['Row'] & {
   golf_course_profiles?: Database['public']['Tables']['golf_course_profiles']['Row']
