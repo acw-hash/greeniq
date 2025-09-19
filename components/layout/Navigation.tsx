@@ -14,12 +14,14 @@ import {
   CreditCard,
   BarChart3,
   Users,
-  Plus
+  Plus,
+  Clock
 } from 'lucide-react'
 
 const golfCourseNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/jobs', label: 'My Jobs', icon: Briefcase },
+  { href: '/current-jobs', label: 'Current Jobs', icon: Clock },
   { href: '/jobs/create', label: 'Post a Job', icon: Plus },
   { href: '/applications', label: 'Applications', icon: FileText },
   { href: '/messages', label: 'Messages', icon: MessageSquare },
@@ -30,6 +32,7 @@ const golfCourseNavItems = [
 const professionalNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/jobs', label: 'Find Jobs', icon: Briefcase },
+  { href: '/current-jobs', label: 'Current Jobs', icon: Clock },
   { href: '/applications', label: 'My Applications', icon: FileText },
   { href: '/messages', label: 'Messages', icon: MessageSquare },
   { href: '/payments', label: 'Earnings', icon: CreditCard },

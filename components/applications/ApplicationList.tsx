@@ -13,11 +13,13 @@ import { useDebounce } from 'use-debounce'
 import type { Database } from '@/types'
 
 type Application = Database['public']['Tables']['applications']['Row'] & {
-  professional_profile?: Database['public']['Tables']['professional_profiles']['Row'] & {
-    profile?: Database['public']['Tables']['profiles']['Row']
+  jobs?: Database['public']['Tables']['jobs']['Row'] & {
+    profiles?: Database['public']['Tables']['profiles']['Row'] & {
+      golf_course_profiles?: Database['public']['Tables']['golf_course_profiles']['Row']
+    }
   }
-  job?: Database['public']['Tables']['jobs']['Row'] & {
-    golf_course_profile?: Database['public']['Tables']['golf_course_profiles']['Row']
+  profiles?: Database['public']['Tables']['profiles']['Row'] & {
+    professional_profiles?: Database['public']['Tables']['professional_profiles']['Row']
   }
 }
 
@@ -30,6 +32,7 @@ interface ApplicationListProps {
   onReject?: (applicationId: string) => void
   onViewDetails?: (applicationId: string) => void
   onWithdraw?: (applicationId: string) => void
+  onAcceptJob?: (applicationId: string) => void
   actionLoading?: boolean
 }
 
@@ -42,6 +45,7 @@ export function ApplicationList({
   onReject,
   onViewDetails,
   onWithdraw,
+  onAcceptJob,
   actionLoading = false
 }: ApplicationListProps) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -51,8 +55,8 @@ export function ApplicationList({
   // Filter applications based on search term and status
   const filteredApplications = applications.filter((application) => {
     const matchesSearch = debouncedSearchTerm === '' || 
-      (viewMode === 'professional' && application.job?.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-      (viewMode === 'golf_course' && application.professional_profile?.profile?.full_name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
+      (viewMode === 'professional' && application.jobs?.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
+      (viewMode === 'golf_course' && application.profiles?.full_name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
 
     const matchesStatus = statusFilter === 'all' || (application.status || 'pending') === statusFilter
 
@@ -136,7 +140,7 @@ export function ApplicationList({
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {statusCounts.accepted || 0}
+                  {(statusCounts.accepted_by_course || 0) + (statusCounts.accepted_by_professional || 0)}
                 </div>
                 <p className="text-sm text-muted-foreground">Accepted</p>
               </div>
@@ -184,7 +188,8 @@ export function ApplicationList({
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="accepted_by_course">Accepted by Course</SelectItem>
+                  <SelectItem value="accepted_by_professional">Accepted by Professional</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
@@ -227,11 +232,13 @@ export function ApplicationList({
               key={application.id}
               application={application}
               viewMode={viewMode}
-              onAccept={onAccept}
-              onReject={onReject}
-              onViewDetails={onViewDetails}
-              onWithdraw={onWithdraw}
-              isLoading={actionLoading}
+              onStatusUpdate={viewMode === 'golf_course' ? 
+                (id: string, status: 'accepted_by_course' | 'rejected') => {
+                  if (status === 'accepted_by_course' && onAccept) onAccept(id)
+                  if (status === 'rejected' && onReject) onReject(id)
+                } : undefined
+              }
+              onAcceptJob={viewMode === 'professional' ? onAcceptJob : undefined}
             />
           ))}
         </div>

@@ -1,223 +1,312 @@
-"use client"
+'use client'
 
-import { User, Calendar, DollarSign, MessageSquare, Check, X, Clock } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { useUpdateApplication } from '@/lib/hooks/useJobs'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Star, MapPin, Clock, DollarSign, MessageSquare, User, Eye } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { cn } from '@/lib/utils'
-import type { Database } from '@/types'
-
-type Application = Database['public']['Tables']['applications']['Row'] & {
-  professional_profile?: Database['public']['Tables']['professional_profiles']['Row'] & {
-    profile?: Database['public']['Tables']['profiles']['Row']
-  }
-  job?: Database['public']['Tables']['jobs']['Row'] & {
-    golf_course_profile?: Database['public']['Tables']['golf_course_profiles']['Row']
-  }
-}
 
 interface ApplicationCardProps {
-  application: Application
+  application: {
+    id: string
+    message: string
+    proposed_rate: number
+    status: 'pending' | 'accepted_by_course' | 'accepted_by_professional' | 'rejected'
+    applied_at: string
+    job_id: string
+    jobs?: {
+      id: string
+      title: string
+      description: string
+      hourly_rate: number
+      start_date: string
+      end_date?: string
+      status: string
+      job_type: string
+      profiles?: {
+        full_name: string
+        avatar_url?: string
+        golf_course_profiles?: {
+          course_name: string
+          address: string
+        }
+      }
+    }
+    profiles?: {
+      full_name: string
+      avatar_url?: string
+      professional_profiles?: {
+        experience_level?: string
+        rating?: number
+        total_jobs?: number
+        specializations?: string[]
+      }
+    }
+  }
   viewMode?: 'professional' | 'golf_course'
-  onAccept?: (applicationId: string) => void
-  onReject?: (applicationId: string) => void
-  onViewDetails?: (applicationId: string) => void
-  onWithdraw?: (applicationId: string) => void
-  isLoading?: boolean
-  className?: string
+  onStatusUpdate?: (id: string, status: 'accepted_by_course' | 'rejected') => void
+  onAcceptJob?: (applicationId: string) => void
 }
 
-export function ApplicationCard({
-  application,
-  viewMode = 'professional',
-  onAccept,
-  onReject,
-  onViewDetails,
-  onWithdraw,
-  isLoading = false,
-  className
-}: ApplicationCardProps) {
-  const getStatusIcon = (status: string) => {
+export function ApplicationCard({ application, viewMode = 'professional', onStatusUpdate, onAcceptJob }: ApplicationCardProps) {
+  const [isUpdating, setIsUpdating] = useState(false)
+  const { mutate: updateApplication, isPending } = useUpdateApplication()
+  const router = useRouter()
+
+  const handleStatusUpdate = async (status: 'accepted_by_course' | 'rejected') => {
+    setIsUpdating(true)
+    try {
+      if (onStatusUpdate) {
+        await onStatusUpdate(application.id, status)
+      } else {
+        updateApplication({ id: application.id, status })
+      }
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const getStatusVariant = (status: string) => {
     switch (status) {
-      case 'accepted':
-        return <Check className="h-4 w-4" />
+      case 'accepted_by_course':
+        return 'secondary'
+      case 'accepted_by_professional':
+        return 'default'
       case 'rejected':
-        return <X className="h-4 w-4" />
+        return 'destructive'
       default:
-        return <Clock className="h-4 w-4" />
+        return 'secondary'
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusDisplay = (status: string) => {
     switch (status) {
-      case 'accepted':
-        return 'default' // Green
+      case 'accepted_by_course':
+        return 'Accepted by Course'
+      case 'accepted_by_professional':
+        return 'Accepted'
       case 'rejected':
-        return 'destructive' // Red
+        return 'Rejected'
       default:
-        return 'secondary' // Yellow/Orange
+        return 'Pending'
     }
   }
 
-  const formatRate = (rate: number | null, jobRate: number) => {
-    if (!rate || rate === jobRate) {
-      return `$${jobRate}/hr (offered rate)`
-    }
-    return `$${rate}/hr (proposed)`
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
-  return (
-    <Card className={cn("hover:shadow-md transition-shadow duration-200", className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {viewMode === 'professional' && application.job && (
-              <div>
-                <h3 className="font-semibold text-lg">{application.job?.title || 'Untitled Job'}</h3>
-                {application.job.golf_course_profile && (
-                  <p className="text-sm text-muted-foreground">
-                    {application.job?.golf_course_profile?.course_name || 'Unknown Course'}
-                  </p>
-                )}
-              </div>
-            )}
-            
-            {viewMode === 'golf_course' && application.professional_profile?.profile && (
-              <div>
-                <h3 className="font-semibold text-lg">
-                  {application.professional_profile?.profile?.full_name || 'Unknown Professional'}
+  // Professional view - shows job information
+  if (viewMode === 'professional') {
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <Link href={`/jobs/${application.job_id}`}>
+                <h3 className="text-lg font-semibold hover:text-primary cursor-pointer mb-2">
+                  {application.jobs?.title || 'Job Title Not Available'}
                 </h3>
-                <p className="text-sm text-muted-foreground capitalize">
-                  {application.professional_profile?.experience_level || 'Unknown'} Level Professional
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <Badge 
-            variant={getStatusColor(application.status || 'pending')}
-            className="flex items-center space-x-1"
-          >
-            {getStatusIcon(application.status || 'pending')}
-            <span className="capitalize">{application.status || 'pending'}</span>
-          </Badge>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Professional Details (for golf course view) */}
-        {viewMode === 'golf_course' && application.professional_profile && (
-          <div className="space-y-3">
-            {application.professional_profile?.specializations && application.professional_profile.specializations.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Specializations</h4>
-                <div className="flex flex-wrap gap-1">
-                  {application.professional_profile?.specializations?.slice(0, 3).map((spec: string) => (
-                    <Badge key={spec} variant="outline" className="text-xs">
-                      {spec.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </Badge>
-                  ))}
-                  {application.professional_profile?.specializations && application.professional_profile.specializations.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{application.professional_profile?.specializations?.length ? application.professional_profile.specializations.length - 3 : 0} more
-                    </Badge>
-                  )}
+              </Link>
+              <p className="text-sm text-muted-foreground mb-2">
+                {application.jobs?.profiles?.golf_course_profiles?.course_name || 'Golf Course'}
+              </p>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />
+                  <span>Your rate: ${application.proposed_rate}/hr</span>
                 </div>
-              </div>
-            )}
-
-            {application.professional_profile?.rating && application.professional_profile.rating > 0 && (
-              <div className="flex items-center space-x-4 text-sm">
-                <div>
-                  <span className="font-medium">Rating:</span> {application.professional_profile?.rating?.toFixed(1)}/5
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{formatDistanceToNow(new Date(application.applied_at))} ago</span>
                 </div>
-                <div>
-                  <span className="font-medium">Jobs completed:</span> {application.professional_profile?.total_jobs || 0}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Application Message */}
-        {application.message && (
-          <div className="p-3 bg-muted rounded-lg">
-            <div className="flex items-start space-x-2">
-              <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm">{application.message}</p>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Rate Information */}
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-2">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-            <span>
-              {viewMode === 'professional' && application.job
-                ? formatRate(application.proposed_rate, application.job?.hourly_rate || 0)
-                : application.proposed_rate
-                ? `$${application.proposed_rate}/hr (proposed)`
-                : 'Rate negotiable'
-              }
-            </span>
+            <Badge variant={getStatusVariant(application.status)}>
+              {getStatusDisplay(application.status)}
+            </Badge>
           </div>
           
-          <div className="flex items-center space-x-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>Applied {application.applied_at ? formatDistanceToNow(new Date(application.applied_at), { addSuffix: true }) : 'Unknown date'}</span>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewDetails?.(application.id)}
-          >
-            View Details
-          </Button>
-
-          <div className="flex space-x-2">
-            {/* Golf Course Actions */}
-            {viewMode === 'golf_course' && application.status === 'pending' && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onReject?.(application.id)}
-                  disabled={isLoading}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Reject
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onAccept?.(application.id)}
-                  disabled={isLoading}
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  Accept
-                </Button>
-              </>
-            )}
-
-            {/* Professional Actions */}
-            {viewMode === 'professional' && application.status === 'pending' && (
-              <Button
-                variant="outline"
+          {application.message && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="w-4 h-4" />
+                <span className="text-sm font-medium">Your Message:</span>
+              </div>
+              <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                {application.message}
+              </p>
+            </div>
+          )}
+          
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-muted-foreground">
+              Job posted rate: ${application.jobs?.hourly_rate}/hr
+              {application.jobs?.start_date && (
+                <span className="ml-4">
+                  Starts: {new Date(application.jobs.start_date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
                 size="sm"
-                onClick={() => onWithdraw?.(application.id)}
-                disabled={isLoading}
+                onClick={() => router.push(`/applications/${application.id}`)}
               >
-                Withdraw
+                <Eye className="h-4 w-4 mr-1" />
+                View Details
               </Button>
+              <Link href={`/jobs/${application.job_id}`}>
+                <Button variant="outline" size="sm">View Job</Button>
+              </Link>
+              {application.status === 'accepted_by_course' && (
+                <Button 
+                  size="sm"
+                  onClick={() => onAcceptJob?.(application.id)}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Accept Job
+                </Button>
+              )}
+              {application.status === 'accepted_by_professional' && (
+                <Button 
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/jobs/${application.job_id}/manage`)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Manage Job
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Golf course view - shows professional information
+  return (
+    <Card className="mb-4">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold">
+                  {application.profiles?.full_name || 'Professional'}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {application.profiles?.professional_profiles?.experience_level || 'Entry'} Level • 
+                  {application.profiles?.professional_profiles?.rating ? 
+                    ` ${application.profiles.professional_profiles.rating}⭐` : 
+                    ' New Professional'
+                  }
+                </p>
+              </div>
+            </div>
+            
+            {application.profiles?.professional_profiles?.specializations && 
+             application.profiles.professional_profiles.specializations.length > 0 && (
+              <div className="mb-3">
+                <p className="text-sm font-medium mb-1">Specializations:</p>
+                <div className="flex flex-wrap gap-1">
+                  {application.profiles.professional_profiles.specializations.map((spec: string) => (
+                    <Badge key={spec} variant="outline" className="text-xs">
+                      {spec.replace('_', ' ')}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
+          <Badge variant={getStatusVariant(application.status)}>
+            {getStatusDisplay(application.status)}
+          </Badge>
+        </div>
+        
+        <div className="mb-4">
+          <h5 className="text-sm font-medium mb-2">Application Message:</h5>
+          <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+            {application.message}
+          </p>
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <div className="text-sm space-y-1">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              <span className="font-medium">
+                ${application.proposed_rate}/hour
+                {application.proposed_rate !== application.jobs?.hourly_rate && (
+                  <span className="text-muted-foreground ml-1">
+                    (Job rate: ${application.jobs?.hourly_rate}/hr)
+                  </span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>Applied {new Date(application.applied_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+          
+          {application.status === 'pending' && (
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => router.push(`/applications/${application.id}`)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Review
+              </Button>
+            </div>
+          )}
+          
+          {application.status === 'accepted_by_course' && (
+            <div className="text-sm text-muted-foreground">
+              Waiting for professional to accept the job
+            </div>
+          )}
+          
+          {application.status === 'accepted_by_professional' && (
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => router.push(`/dashboard/messages/${application.job_id}`)}
+              >
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Message Professional
+              </Button>
+              <Button 
+                size="sm"
+                onClick={() => router.push(`/dashboard/jobs/${application.job_id}`)}
+              >
+                View Job Progress
+              </Button>
+            </div>
+          )}
+          
+          {application.status === 'rejected' && (
+            <div className="text-sm text-muted-foreground">
+              Application declined
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

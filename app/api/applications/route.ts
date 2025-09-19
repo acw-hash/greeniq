@@ -4,69 +4,102 @@ import { createApplicationSchema } from '@/lib/validations/jobs'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
   
   try {
-    // Get authenticated user
+    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
-    // Get user profile to determine user type
+
+    // Get user profile to determine type
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, user_type')
+      .select('user_type')
       .eq('id', user.id)
-      .single() as { data: { id: string; user_type: string } | null }
-    
-    let query = supabase.from('applications').select(`
-      *,
-      jobs!inner(
-        *,
-        profiles!course_id(
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    if (profile.user_type === 'professional') {
+      // CORRECTED: Get applications for professional with proper relationship path
+      const { data, error } = await supabase
+        .from('applications')
+        .select(`
           *,
-          golf_course_profiles(course_name)
-        )
-      ),
-      profiles!professional_id(
-        full_name,
-        email,
-        professional_profiles(*)
-      )
-    `)
-    
-    // Filter based on user type
-    if (profile?.user_type === 'professional') {
-      query = query.eq('professional_id', user.id)
-    } else if (profile?.user_type === 'golf_course') {
-      query = query.eq('jobs.course_id', user.id)
-    } else {
-      return NextResponse.json({ error: 'Invalid user type' }, { status: 403 })
+          jobs (
+            id,
+            title,
+            description,
+            job_type,
+            hourly_rate,
+            start_date,
+            status,
+            course_id,
+            profiles!jobs_course_id_fkey (
+              id,
+              full_name,
+              golf_course_profiles (
+                course_name,
+                course_type,
+                address
+              )
+            )
+          )
+        `)
+        .eq('professional_id', user.id)
+        .order('applied_at', { ascending: false })
+
+      if (error) {
+        console.error('Professional applications error:', error)
+        throw error
+      }
+      return NextResponse.json(data || [])
+
+    } else if (profile.user_type === 'golf_course') {
+      // CORRECTED: Get applications for golf course jobs with proper relationship path
+      const { data, error } = await supabase
+        .from('applications')
+        .select(`
+          *,
+          jobs!inner (
+            id,
+            title,
+            job_type,
+            hourly_rate,
+            start_date,
+            course_id
+          ),
+          profiles!applications_professional_id_fkey (
+            id,
+            full_name,
+            phone,
+            professional_profiles (
+              bio,
+              experience_level,
+              rating,
+              hourly_rate,
+              specializations
+            )
+          )
+        `)
+        .eq('jobs.course_id', user.id)
+        .order('applied_at', { ascending: false })
+
+      if (error) {
+        console.error('Golf course applications error:', error)
+        throw error
+      }
+      return NextResponse.json(data || [])
     }
-    
-    // Add additional filters
-    const status = searchParams.get('status')
-    if (status) {
-      query = query.eq('status', status)
-    }
-    
-    const { data, error } = await query.order('applied_at', { ascending: false })
-    
-    if (error) {
-      console.error('Applications query error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch applications from database' },
-        { status: 500 }
-      )
-    }
-    
-    // Handle empty results gracefully
-    return NextResponse.json({ data: data || [] })
+
+    return NextResponse.json([])
   } catch (error) {
     console.error('Applications fetch error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch applications' },
+      { error: 'Failed to fetch applications', details: error.message },
       { status: 500 }
     )
   }
@@ -122,7 +155,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create application
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('applications')
       .insert({
         job_id: validatedData.job_id,
@@ -132,10 +165,16 @@ export async function POST(request: NextRequest) {
       })
       .select(`
         *,
-        jobs!inner(
+        jobs!applications_job_id_fkey (
           title,
-          profiles!course_id(
-            golf_course_profiles(course_name)
+          job_type,
+          hourly_rate,
+          profiles!jobs_course_id_fkey (
+            full_name,
+            golf_course_profiles (
+              course_name,
+              course_type
+            )
           )
         )
       `)

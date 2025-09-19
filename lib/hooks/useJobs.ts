@@ -1,104 +1,414 @@
-"use client"
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useEffect, useMemo } from 'react'
+import { useJobStore, Job } from '@/lib/stores/jobStore'
+import { JobFormData, JobSearchData } from '@/lib/validations/jobs'
+import { toast } from '@/lib/utils/toast'
 import { createClient } from '@/lib/supabase/client'
-import { useAuthStore } from '@/lib/stores/authStore'
-import { useUIStore } from '@/lib/stores/uiStore'
-import type { JobFilters, CreateJobData, CreateApplicationData } from '@/lib/validations/jobs'
 
-export function useJobs(filters?: JobFilters) {
-  return useQuery({
-    queryKey: ['jobs', filters],
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      
-      // Map filters to API parameters
-      if (filters?.job_type) params.append('job_type', filters.job_type)
-      if (filters?.min_rate) params.append('min_rate', filters.min_rate.toString())
-      if (filters?.max_rate) params.append('max_rate', filters.max_rate.toString())
-      if (filters?.max_distance) params.append('max_distance', filters.max_distance.toString())
-      if (filters?.location) params.append('location', filters.location)
-      if (filters?.urgency_level) params.append('urgency_level', filters.urgency_level)
-      if (filters?.required_experience) params.append('required_experience', filters.required_experience)
-      if (filters?.search) params.append('search', filters.search)
-      if (filters?.status) params.append('status', filters.status)
+// Query keys
+export const jobKeys = {
+  all: ['jobs'] as const,
+  lists: () => [...jobKeys.all, 'list'] as const,
+  list: (filters: JobSearchData) => [...jobKeys.lists(), filters] as const,
+  details: () => [...jobKeys.all, 'detail'] as const,
+  detail: (id: string) => [...jobKeys.details(), id] as const,
+  myJobs: () => [...jobKeys.all, 'my-jobs'] as const,
+  search: (filters: JobSearchData) => [...jobKeys.all, 'search', filters] as const,
+  applications: () => [...jobKeys.all, 'applications'] as const,
+  application: (jobId?: string) => [...jobKeys.applications(), jobId] as const
+}
 
-      const response = await fetch(`/api/jobs?${params}`)
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to fetch jobs')
+// API functions
+const fetchJobs = async (filters: JobSearchData): Promise<{ jobs: Job[]; pagination: any }> => {
+  const params = new URLSearchParams()
+  
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      if (key === 'location' && typeof value === 'object' && !Array.isArray(value)) {
+        params.append('lat', value.lat.toString())
+        params.append('lng', value.lng.toString())
+        params.append('address', value.address)
+      } else if (Array.isArray(value)) {
+        params.append(key, value.join(','))
+      } else {
+        params.append(key, value.toString())
       }
-      
-      const jobs = await response.json()
-      // Ensure we always return an array
-      return Array.isArray(jobs) ? jobs : []
+    }
+  })
+
+  const response = await fetch(`/api/jobs?${params.toString()}`)
+  if (!response.ok) {
+    throw new Error('Failed to fetch jobs')
+  }
+  return response.json()
+}
+
+const fetchJob = async (id: string): Promise<{ job: Job }> => {
+  const response = await fetch(`/api/jobs/${id}`)
+  if (!response.ok) {
+    throw new Error('Failed to fetch job')
+  }
+  return response.json()
+}
+
+const searchJobs = async (filters: JobSearchData): Promise<{ jobs: Job[]; pagination: any; stats: any }> => {
+  const params = new URLSearchParams()
+  
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      if (key === 'location' && typeof value === 'object' && !Array.isArray(value)) {
+        params.append('lat', value.lat.toString())
+        params.append('lng', value.lng.toString())
+        params.append('address', value.address)
+      } else if (Array.isArray(value)) {
+        params.append(key, value.join(','))
+      } else {
+        params.append(key, value.toString())
+      }
+    }
+  })
+
+  const response = await fetch(`/api/jobs/search?${params.toString()}`)
+  if (!response.ok) {
+    throw new Error('Failed to search jobs')
+  }
+  return response.json()
+}
+
+const createJob = async (data: JobFormData): Promise<{ job: Job }> => {
+  const response = await fetch('/api/jobs', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify(data),
+  })
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to create job')
+  }
+  
+  return response.json()
+}
+
+const updateJob = async ({ id, data }: { id: string; data: Partial<JobFormData> }): Promise<{ job: Job }> => {
+  const response = await fetch(`/api/jobs/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update job')
+  }
+  
+  return response.json()
+}
+
+const deleteJob = async (id: string): Promise<void> => {
+  const response = await fetch(`/api/jobs/${id}`, {
+    method: 'DELETE',
+  })
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to delete job')
+  }
+}
+
+// Hooks
+export const useJobs = (filters: JobSearchData & { course_id?: string }) => {
+  return useQuery({
+    queryKey: jobKeys.list(filters),
+    queryFn: () => fetchJobs(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    gcTime: 10 * 60 * 1000, // 10 minutes
   })
 }
 
-export function useJob(id: string) {
+export const useJob = (id: string) => {
   return useQuery({
-    queryKey: ['job', id],
+    queryKey: jobKeys.detail(id),
     queryFn: async () => {
+      console.log('Fetching job with ID:', id)
       const response = await fetch(`/api/jobs/${id}`)
       if (!response.ok) {
-        throw new Error('Failed to fetch job')
+        const errorData = await response.json()
+        console.error('Job fetch error:', errorData)
+        throw new Error(errorData.error || 'Failed to fetch job')
       }
-      return response.json()
+      const data = await response.json()
+      console.log('Job data received:', data)
+      return data.job
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1
   })
 }
 
-export function useCreateJob() {
+export const useJobSearch = (filters: JobSearchData) => {
+  return useQuery({
+    queryKey: jobKeys.search(filters),
+    queryFn: () => searchJobs(filters),
+    staleTime: 2 * 60 * 1000, // 2 minutes for search results
+    gcTime: 5 * 60 * 1000,
+  })
+}
+
+export const useMyJobs = () => {
+  const { searchFilters } = useJobStore()
+  
+  // Memoize the search filters to prevent infinite loops
+  const memoizedFilters = useMemo(() => ({
+    ...searchFilters,
+    status: 'open' as const,
+    page: 1,
+    limit: 20
+  }), [
+    searchFilters.search,
+    searchFilters.job_type,
+    searchFilters.min_rate,
+    searchFilters.max_rate,
+    searchFilters.radius,
+    searchFilters.urgency_level,
+    searchFilters.required_experience,
+    JSON.stringify(searchFilters.location),
+    JSON.stringify(searchFilters.required_certifications)
+  ])
+  
+  return useQuery({
+    queryKey: jobKeys.list(memoizedFilters),
+    queryFn: () => fetchJobs(memoizedFilters),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  })
+}
+
+export const useCreateJob = () => {
   const queryClient = useQueryClient()
-  const { addToast } = useUIStore()
+  const { addJob, setCurrentJob, resetForm } = useJobStore()
   
   return useMutation({
-    mutationFn: async (data: CreateJobData) => {
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
+    mutationFn: createJob,
+    onSuccess: (data) => {
+      // Update cache
+      queryClient.invalidateQueries({ queryKey: jobKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: jobKeys.myJobs() })
+      
+      // Update store
+      addJob(data.job)
+      setCurrentJob(data.job)
+      resetForm()
+      
+      toast.success('Job created successfully!')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+  })
+}
+
+export const useUpdateJob = () => {
+  const queryClient = useQueryClient()
+  const { updateJob: updateJobStore } = useJobStore()
+  
+  return useMutation({
+    mutationFn: updateJob,
+    onSuccess: (data, variables) => {
+      // Update cache
+      queryClient.invalidateQueries({ queryKey: jobKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: jobKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: jobKeys.myJobs() })
+      
+      // Update store
+      updateJobStore(variables.id, data.job)
+      
+      toast.success('Job updated successfully!')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+  })
+}
+
+export const useDeleteJob = () => {
+  const queryClient = useQueryClient()
+  const { removeJob, setCurrentJob } = useJobStore()
+  
+  return useMutation({
+    mutationFn: deleteJob,
+    onSuccess: (_, id) => {
+      // Update cache
+      queryClient.invalidateQueries({ queryKey: jobKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: jobKeys.myJobs() })
+      queryClient.removeQueries({ queryKey: jobKeys.detail(id) })
+      
+      // Update store
+      removeJob(id)
+      setCurrentJob(null)
+      
+      toast.success('Job deleted successfully!')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+  })
+}
+
+// Optimistic updates for better UX
+export const useOptimisticJobUpdate = () => {
+  const queryClient = useQueryClient()
+  const { updateJob: updateJobStore } = useJobStore()
+  
+  const optimisticUpdate = (id: string, updates: Partial<Job>) => {
+    // Update store immediately
+    updateJobStore(id, updates)
+    
+    // Update cache optimistically
+    queryClient.setQueryData(jobKeys.detail(id), (old: any) => {
+      if (old) {
+        return { ...old, job: { ...old.job, ...updates } }
+      }
+      return old
+    })
+    
+    queryClient.setQueryData(jobKeys.lists(), (old: any) => {
+      if (old) {
+        return {
+          ...old,
+          jobs: old.jobs.map((job: Job) => 
+            job.id === id ? { ...job, ...updates } : job
+          )
+        }
+      }
+      return old
+    })
+  }
+  
+  return { optimisticUpdate }
+}
+
+// Prefetch utilities
+export const usePrefetchJob = () => {
+  const queryClient = useQueryClient()
+  
+  const prefetchJob = (id: string) => {
+    queryClient.prefetchQuery({
+      queryKey: jobKeys.detail(id),
+      queryFn: () => fetchJob(id),
+      staleTime: 5 * 60 * 1000,
+    })
+  }
+  
+  return { prefetchJob }
+}
+
+// Real-time subscription hook
+export const useJobSubscription = (jobId?: string) => {
+  const queryClient = useQueryClient()
+  const { updateJob: updateJobStore } = useJobStore()
+  
+  // This would integrate with Supabase real-time subscriptions
+  // For now, we'll return a placeholder
+  const subscribe = () => {
+    // In a real implementation, you would:
+    // 1. Set up Supabase real-time subscription
+    // 2. Listen for job updates
+    // 3. Update cache and store when changes occur
+    
+    return () => {
+      // Cleanup subscription
+    }
+  }
+  
+  return { subscribe }
+}
+
+// Debounced search hook
+export const useDebouncedJobSearch = (filters: JobSearchData, delay = 300) => {
+  const [debouncedFilters, setDebouncedFilters] = useState(filters)
+  
+  // Memoize filters to prevent infinite loops
+  const memoizedFilters = useMemo(() => filters, [
+    filters.search,
+    filters.job_type,
+    filters.min_rate,
+    filters.max_rate,
+    filters.radius,
+    filters.urgency_level,
+    filters.required_experience,
+    JSON.stringify(filters.location),
+    JSON.stringify(filters.required_certifications)
+  ])
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(memoizedFilters)
+    }, delay)
+    
+    return () => clearTimeout(timer)
+  }, [memoizedFilters, delay])
+  
+  return useJobSearch(debouncedFilters)
+}
+
+// Helper hook for job statistics
+export const useJobStats = () => {
+  const { data: searchData } = useJobSearch({ 
+    status: 'open',
+    radius: 25,
+    page: 1,
+    limit: 20
+  })
+  
+  return {
+    totalJobs: searchData?.stats?.totalJobs || 0,
+    averageRate: searchData?.stats?.averageRate || 0,
+    jobTypes: searchData?.stats?.jobTypes || {},
+    urgencyLevels: searchData?.stats?.urgencyLevels || {}
+  }
+}
+
+// Application hooks
+export const useApplications = (jobId?: string, professionalId?: string) => {
+  return useQuery({
+    queryKey: jobKeys.application(jobId),
+    queryFn: async () => {
+      // Use the corrected API endpoint instead of direct Supabase queries
+      const url = jobId ? `/api/jobs/${jobId}/applications` : '/api/applications'
+      const response = await fetch(url)
       
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create job')
+        const errorData = await response.json()
+        console.error('Applications fetch error:', errorData)
+        throw new Error(errorData.error || 'Failed to fetch applications')
       }
       
-      return response.json()
+      const data = await response.json()
+      console.log('Applications data:', data) // Debug log
+      return data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['jobs'] })
-      addToast({
-        variant: 'success',
-        title: 'Job posted successfully!',
-        description: 'Your job posting is now live and professionals can apply.',
-      })
-    },
-    onError: (error) => {
-      addToast({
-        variant: 'destructive',
-        title: 'Failed to post job',
-        description: error.message,
-      })
-    },
+    enabled: !!(jobId || professionalId),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
   })
 }
 
-export function useJobApplication() {
+export const useCreateApplication = () => {
   const queryClient = useQueryClient()
-  const { addToast } = useUIStore()
   
   return useMutation({
-    mutationFn: async (data: CreateApplicationData) => {
+    mutationFn: async (data: { job_id: string; professional_id: string; message: string; proposed_rate: number }) => {
       const response = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       })
       
       if (!response.ok) {
@@ -109,55 +419,25 @@ export function useJobApplication() {
       return response.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['jobs'] })
-      queryClient.invalidateQueries({ queryKey: ['applications'] })
-      addToast({
-        variant: 'success',
-        title: 'Application submitted!',
-        description: 'Your application has been sent to the golf course.',
-      })
+      queryClient.invalidateQueries({ queryKey: jobKeys.applications() })
+      queryClient.invalidateQueries({ queryKey: jobKeys.lists() })
+      toast.success('Application submitted successfully!')
     },
-    onError: (error) => {
-      addToast({
-        variant: 'destructive',
-        title: 'Failed to submit application',
-        description: error.message,
-      })
+    onError: (error: Error) => {
+      toast.error(error.message)
     },
   })
 }
 
-export function useApplications() {
-  const { user } = useAuthStore()
-  
-  return useQuery({
-    queryKey: ['applications', user?.id],
-    queryFn: async () => {
-      const response = await fetch('/api/applications')
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to fetch applications')
-      }
-      const result = await response.json()
-      // API returns { data: [...] }, so extract the data array
-      return result.data || []
-    },
-    enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnWindowFocus: false,
-  })
-}
-
-export function useUpdateApplication() {
+export const useUpdateApplication = () => {
   const queryClient = useQueryClient()
-  const { addToast } = useUIStore()
   
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: 'accepted' | 'rejected' }) => {
+    mutationFn: async ({ id, status }: { id: string, status: 'accepted' | 'rejected' }) => {
       const response = await fetch(`/api/applications/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status })
       })
       
       if (!response.ok) {
@@ -167,21 +447,9 @@ export function useUpdateApplication() {
       
       return response.json()
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] })
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
-      addToast({
-        variant: 'success',
-        title: `Application ${variables.status}`,
-        description: `The application has been ${variables.status}.`,
-      })
-    },
-    onError: (error) => {
-      addToast({
-        variant: 'destructive',
-        title: 'Failed to update application',
-        description: error.message,
-      })
-    },
+    }
   })
 }

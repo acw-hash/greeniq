@@ -86,9 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const jobStore = useJobStore.getState()
           jobStore.setJobs([])
-          jobStore.clearFilters()
-          jobStore.setSelectedJob(null)
-          jobStore.setSearchTerm('')
+          jobStore.clearSearchFilters()
+          jobStore.setCurrentJob(null)
           console.log('✅ Job store cleared')
         } catch (error) {
           console.warn('⚠️ Failed to clear job store:', error)

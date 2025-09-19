@@ -13,7 +13,7 @@ import { useAuthStore } from '@/lib/stores/authStore'
 export default function ApplicationsPage() {
   const router = useRouter()
   const { user, profile } = useAuthStore()
-  const { data: applications, isLoading, error } = useApplications()
+  const { data: applications, isLoading, error } = useApplications(undefined, user?.id)
   const updateApplication = useUpdateApplication()
 
   useEffect(() => {
@@ -26,12 +26,55 @@ export default function ApplicationsPage() {
 
   const handleAcceptApplication = async (applicationId: string) => {
     try {
-      await updateApplication.mutateAsync({
-        id: applicationId,
-        status: 'accepted'
+      console.log('🔍 Frontend: Accepting application:', applicationId)
+      
+      const response = await fetch(`/api/applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          status: 'accepted' 
+        })
       })
+      
+      console.log('📡 Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('❌ API Error:', errorData)
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('✅ Success:', data)
+      
+      // Refresh the page to show updated data
+      window.location.reload()
+      
     } catch (error) {
-      console.error('Failed to accept application:', error)
+      console.error('💥 Frontend error accepting application:', error)
+      alert(`Failed to accept application: ${error.message}`)
+    }
+  }
+
+  const handleAcceptJob = async (applicationId: string) => {
+    try {
+      const response = await fetch(`/api/applications/${applicationId}/accept`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to accept job')
+      }
+
+      // Refresh the applications list
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to accept job:', error)
     }
   }
 
@@ -142,6 +185,7 @@ export default function ApplicationsPage() {
             onReject={viewMode === 'golf_course' ? handleRejectApplication : undefined}
             onViewDetails={handleViewApplicationDetails}
             onWithdraw={viewMode === 'professional' ? handleWithdrawApplication : undefined}
+            onAcceptJob={viewMode === 'professional' ? handleAcceptJob : undefined}
             actionLoading={updateApplication.isPending}
           />
         )}

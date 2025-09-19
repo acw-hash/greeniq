@@ -136,9 +136,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         
         // Reset job store
         useJobStore.getState().setJobs([])
-        useJobStore.getState().clearFilters()
-        useJobStore.getState().setSelectedJob(null)
-        useJobStore.getState().setSearchTerm('')
+        useJobStore.getState().setSearchFilters({})
         
         // Clear UI store (except theme)
         const currentTheme = useUIStore.getState().theme
@@ -529,9 +527,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         const { useUIStore } = await import('@/lib/stores/uiStore')
         
         useJobStore.getState().setJobs([])
-        useJobStore.getState().clearFilters()
-        useJobStore.getState().setSelectedJob(null)
-        useJobStore.getState().setSearchTerm('')
+        useJobStore.getState().setSearchFilters({})
         
         const currentTheme = useUIStore.getState().theme
         useUIStore.setState({
