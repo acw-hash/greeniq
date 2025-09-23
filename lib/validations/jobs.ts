@@ -159,6 +159,9 @@ export const rateSuggestions: Record<JobType, { min: number; max: number; recomm
 // Application schemas
 export const applicationStatusEnum = z.enum(['pending', 'accepted', 'rejected'])
 
+// Frontend application status enum (what the frontend sends)
+export const frontendApplicationStatusEnum = z.enum(['pending', 'accepted_by_course', 'rejected'])
+
 export const createApplicationSchema = z.object({
   job_id: z.string().uuid('Invalid job ID'),
   message: z.string()
@@ -171,6 +174,21 @@ export const createApplicationSchema = z.object({
     .optional()
 })
 
+// Schema for frontend requests (accepts frontend status values)
+export const frontendUpdateApplicationSchema = z.object({
+  status: frontendApplicationStatusEnum,
+  message: z.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(1000, 'Message must be less than 1000 characters')
+    .optional(),
+  proposed_rate: z.number()
+    .min(15, 'Minimum rate is $15/hour')
+    .max(200, 'Maximum rate is $200/hour')
+    .multipleOf(0.01, 'Rate must be in cents')
+    .optional()
+})
+
+// Schema for database updates (uses database status values)
 export const updateApplicationSchema = z.object({
   id: z.string().uuid('Invalid application ID'),
   status: applicationStatusEnum,
@@ -188,9 +206,11 @@ export const updateApplicationSchema = z.object({
 // Application types
 export type ApplicationFormData = z.infer<typeof createApplicationSchema>
 export type ApplicationUpdateData = z.infer<typeof updateApplicationSchema>
+export type FrontendApplicationUpdateData = z.infer<typeof frontendUpdateApplicationSchema>
 export type UpdateApplicationData = ApplicationUpdateData // Alias for backward compatibility
 export type CreateApplicationInput = ApplicationFormData // Alias for backward compatibility
 export type ApplicationStatus = z.infer<typeof applicationStatusEnum>
+export type FrontendApplicationStatus = z.infer<typeof frontendApplicationStatusEnum>
 
 // Application status display names
 export const applicationStatusDisplayNames: Record<ApplicationStatus, string> = {

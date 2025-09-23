@@ -34,7 +34,7 @@ export default function ApplicationsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          status: 'accepted' 
+          status: 'accepted_by_course' 
         })
       })
       

@@ -110,7 +110,7 @@ export function CurrentJobsList() {
                   {/* Professional Actions */}
                   {isProfessional && (
                     <Button 
-                      onClick={() => router.push(`/dashboard/jobs/${job.id}/manage`)}
+                      onClick={() => router.push(`/jobs/${job.id}/manage`)}
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       Manage Job
@@ -122,7 +122,7 @@ export function CurrentJobsList() {
                     <>
                       <Button 
                         variant="outline"
-                        onClick={() => router.push(`/dashboard/jobs/${job.id}/progress`)}
+                        onClick={() => router.push(`/jobs/${job.id}/progress`)}
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         View Progress
@@ -130,7 +130,7 @@ export function CurrentJobsList() {
                       
                       {job.submission_status === 'submitted' && (
                         <Button 
-                          onClick={() => router.push(`/dashboard/jobs/${job.id}/review`)}
+                          onClick={() => router.push(`/jobs/${job.id}/review`)}
                           className="bg-blue-600 hover:bg-blue-700"
                         >
                           Review Work
@@ -142,7 +142,7 @@ export function CurrentJobsList() {
                   {/* Message Button */}
                   <Button 
                     variant="outline"
-                    onClick={() => router.push(`/dashboard/messages/${job.id}`)}
+                    onClick={() => router.push(`/messages/${job.id}`)}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Message

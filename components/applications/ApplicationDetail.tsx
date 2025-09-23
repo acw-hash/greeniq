@@ -36,7 +36,7 @@ export function ApplicationDetail({ applicationId, initialData }: ApplicationDet
   })
 
   const updateApplicationMutation = useMutation({
-    mutationFn: async ({ status }: { status: 'accepted' | 'rejected' }) => {
+    mutationFn: async ({ status }: { status: 'accepted_by_course' | 'rejected' }) => {
       console.log('🔍 Frontend: Updating application status:', status)
       
       const response = await fetch(`/api/applications/${applicationId}`, {
@@ -69,8 +69,9 @@ export function ApplicationDetail({ applicationId, initialData }: ApplicationDet
     }
   })
 
-  const handleStatusUpdate = async (status: 'accepted' | 'rejected') => {
-    if (window.confirm(`Are you sure you want to ${status} this application?`)) {
+  const handleStatusUpdate = async (status: 'accepted_by_course' | 'rejected') => {
+    const action = status === 'accepted_by_course' ? 'accept' : 'reject'
+    if (window.confirm(`Are you sure you want to ${action} this application?`)) {
       setIsUpdating(true)
       try {
         await updateApplicationMutation.mutateAsync({ status })
@@ -104,12 +105,14 @@ export function ApplicationDetail({ applicationId, initialData }: ApplicationDet
         </div>
         <Badge 
           variant={
-            application.status === 'accepted' ? 'default' : 
+            application.status === 'accepted_by_course' || application.status === 'accepted_by_professional' ? 'default' : 
             application.status === 'rejected' ? 'destructive' : 
             'secondary'
           }
         >
-          {application.status}
+          {application.status === 'accepted_by_course' ? 'Accepted by Course' :
+           application.status === 'accepted_by_professional' ? 'Accepted by Professional' :
+           application.status}
         </Badge>
       </div>
 
@@ -247,7 +250,7 @@ export function ApplicationDetail({ applicationId, initialData }: ApplicationDet
           <CardContent>
             <div className="flex gap-4">
               <Button
-                onClick={() => handleStatusUpdate('accepted')}
+                onClick={() => handleStatusUpdate('accepted_by_course')}
                 disabled={isUpdating}
                 className="bg-green-600 hover:bg-green-700"
               >

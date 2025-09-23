@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { updateApplicationSchema, type UpdateApplicationData } from '@/lib/validations/jobs'
+import { frontendUpdateApplicationSchema, updateApplicationSchema, type UpdateApplicationData } from '@/lib/validations/jobs'
 
 export async function GET(
   request: NextRequest,
@@ -121,19 +121,29 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
     }
 
-    const { status } = body
-
-    // Validate status
-    if (!status) {
-      console.log('❌ Missing status in request body')
-      return NextResponse.json({ error: 'Status is required' }, { status: 400 })
+    // Validate request body with frontend schema
+    let validatedData
+    try {
+      validatedData = frontendUpdateApplicationSchema.parse(body)
+    } catch (validationError) {
+      console.log('❌ Validation error:', validationError)
+      return NextResponse.json({ 
+        error: 'Invalid request data', 
+        details: validationError.errors 
+      }, { status: 400 })
     }
+    
+    const { status } = validatedData
 
-    if (!['accepted', 'rejected'].includes(status)) {
-      console.log('❌ Invalid status:', status)
-      return NextResponse.json({ error: 'Invalid status. Must be "accepted" or "rejected"' }, { status: 400 })
+    // Map frontend status values to database status values
+    const statusMap: Record<string, string> = {
+      'accepted_by_course': 'accepted',
+      'rejected': 'rejected',
+      'pending': 'pending'
     }
-    console.log('✅ Status validated:', status)
+    
+    const dbStatus = statusMap[status]
+    console.log('✅ Status validated:', status, '-> mapped to:', dbStatus)
 
     // Get application with job details
     console.log('🔍 Fetching application details...')
@@ -177,7 +187,7 @@ export async function PATCH(
     const { data: updatedApplication, error: updateError } = await supabase
       .from('applications')
       .update({ 
-        status,
+        status: dbStatus,
         updated_at: new Date().toISOString()
       })
       .eq('id', params.id)
@@ -193,8 +203,8 @@ export async function PATCH(
     }
     console.log('✅ Application updated successfully')
 
-    if (status === 'accepted') {
-      console.log('🔄 Processing acceptance actions...')
+    if (dbStatus === 'accepted') {
+      console.log('🔄 Processing golf course acceptance actions...')
       
       // 1. Reject all other applications for this job
       console.log('🔄 Rejecting other applications...')
@@ -211,83 +221,19 @@ export async function PATCH(
         console.log('✅ Other applications rejected')
       }
 
-      // 2. Update job status
-      console.log('🔄 Updating job status...')
-      const { error: jobUpdateError } = await supabase
-        .from('jobs')
-        .update({ 
-          status: 'in_progress',
-          submission_status: 'not_started',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', application.job_id)
-
-      if (jobUpdateError) {
-        console.log('⚠️ Error updating job status:', jobUpdateError)
-        // Don't fail the main request for this
-      } else {
-        console.log('✅ Job status updated')
-      }
-
-      // 3. CREATE AUTOMATIC CONVERSATION
-      console.log('🔄 Creating conversation...')
-      const { data: conversation, error: conversationError } = await supabase
-        .from('job_conversations')
-        .upsert({
-          job_id: application.job_id,
-          course_id: application.jobs.course_id,
-          professional_id: application.professional_id
-        }, {
-          onConflict: 'job_id'
-        })
-        .select()
-        .single()
-
-      if (conversationError) {
-        console.log('⚠️ Error creating conversation:', conversationError)
-        // Don't fail the main request for this
-      } else {
-        console.log('✅ Conversation created:', conversation.id)
-        
-        // Send welcome message
-        console.log('🔄 Sending welcome message...')
-        const { error: messageError } = await supabase
-          .from('messages')
-          .insert({
-            conversation_id: conversation.id,
-            sender_id: user.id,
-            content: `Congratulations! Your application has been accepted for "${application.jobs.title}". You can now start the job when ready. Please keep us updated on your progress.`,
-            message_type: 'text'
-          })
-
-        if (messageError) {
-          console.log('⚠️ Error sending welcome message:', messageError)
-        } else {
-          console.log('✅ Welcome message sent')
-        }
-      }
-
-      // 4. CREATE NOTIFICATION FOR PROFESSIONAL
-      console.log('🔄 Creating notification...')
-      const { error: notificationError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: application.professional_id,
-          type: 'application_accepted',
-          title: 'Application Accepted! 🎉',
-          message: `Your application for "${application.jobs.title}" has been accepted! You can now start the job.`,
-          metadata: {
-            job_id: application.job_id,
-            application_id: params.id
-          }
-        })
-
-      if (notificationError) {
-        console.log('⚠️ Error creating notification:', notificationError)
-        // Don't fail the main request for this
-      } else {
-        console.log('✅ Notification created')
-      }
+      // 2. Job status remains 'open' - wait for professional to accept
+      console.log('✅ Job status remains open - waiting for professional acceptance')
+      
+      // 3. NO CONVERSATION CREATED YET - wait for professional acceptance
+      console.log('✅ No conversation created yet - waiting for professional acceptance')
+      
+      // 4. Send notification to professional
+      console.log('🔄 Sending notification to professional...')
+      await notifyProfessionalOfStatusUpdate(
+        application.professional_id, 
+        application.job_id, 
+        'accepted'
+      )
     }
 
     console.log('🎉 Application acceptance completed successfully')
@@ -388,7 +334,7 @@ export async function PUT(
     if (error) throw error
     
     // If application is accepted by course, reject other applications but keep job open
-    if (validatedData.status === 'accepted_by_course' && application.job_id) {
+    if (validatedData.status === 'accepted' && application.job_id) {
       // Reject other pending applications for this job
       await supabase
         .from('applications')
