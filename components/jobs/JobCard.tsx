@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { Job } from '@/lib/stores/jobStore'
+import { JobWithApplicationStatus } from '@/types/jobs'
 import { jobTypeDisplayNames, urgencyLevelDisplayNames, statusDisplayNames } from '@/lib/validations/jobs'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
@@ -23,7 +24,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
 
 interface JobCardProps {
-  job: Job
+  job: Job | JobWithApplicationStatus
   variant?: 'default' | 'compact' | 'detailed'
   showActions?: boolean
   onView?: (job: Job) => void
@@ -33,6 +34,22 @@ interface JobCardProps {
   onManage?: (job: Job) => void
   onAcceptJob?: (job: Job) => void
   application?: { status: string }
+  userType?: 'professional' | 'golf_course'
+  className?: string
+  showApplyButton?: boolean
+}
+
+interface EnhancedJobCardProps {
+  job: JobWithApplicationStatus
+  onApply?: (jobId: string) => void
+  showApplyButton?: boolean
+  variant?: 'default' | 'compact' | 'detailed'
+  showActions?: boolean
+  onView?: (job: JobWithApplicationStatus) => void
+  onSave?: (job: JobWithApplicationStatus) => void
+  onShare?: (job: JobWithApplicationStatus) => void
+  onManage?: (job: JobWithApplicationStatus) => void
+  onAcceptJob?: (job: JobWithApplicationStatus) => void
   userType?: 'professional' | 'golf_course'
   className?: string
 }
@@ -383,6 +400,215 @@ export default function JobCard({
           )}
         </div>
       </CardContent>
+    </Card>
+  )
+}
+
+// Enhanced JobCard with application status support
+export function EnhancedJobCard({ 
+  job, 
+  onApply, 
+  showApplyButton = true,
+  variant = 'default',
+  showActions = true,
+  onView,
+  onSave,
+  onShare,
+  onManage,
+  onAcceptJob,
+  userType,
+  className 
+}: EnhancedJobCardProps) {
+  const [isSaved, setIsSaved] = useState(false)
+  const [isLiked, setIsLiked] = useState(false)
+  
+  const getApplicationStatusBadge = () => {
+    if (!job.hasApplied) return null
+    
+    const status = job.userApplication?.status
+    const variant = status === 'accepted' ? 'default' : 
+                   status === 'rejected' ? 'destructive' : 'secondary'
+    
+    return (
+      <Badge variant={variant} className="absolute top-2 right-2">
+        {status === 'pending' && 'Applied'}
+        {status === 'accepted' && 'Accepted'}
+        {status === 'rejected' && 'Rejected'}
+      </Badge>
+    )
+  }
+
+  const renderActionButton = () => {
+    if (!showApplyButton) return null
+    
+    if (job.hasApplied) {
+      const status = job.userApplication?.status
+      if (status === 'accepted') {
+        return (
+          <Button size="sm" variant="default" disabled>
+            Accepted
+          </Button>
+        )
+      }
+      if (status === 'rejected') {
+        return (
+          <Button size="sm" variant="outline" disabled>
+            Rejected
+          </Button>
+        )
+      }
+      return (
+        <Button size="sm" variant="secondary" disabled>
+          Application Pending
+        </Button>
+      )
+    }
+    
+    return (
+      <Button 
+        size="sm" 
+        onClick={() => onApply?.(job.id)}
+      >
+        Apply Now
+      </Button>
+    )
+  }
+
+  const handleSave = () => {
+    setIsSaved(!isSaved)
+    onSave?.(job)
+  }
+  
+  const handleLike = () => {
+    setIsLiked(!isLiked)
+  }
+  
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: job.title,
+        text: job.description,
+        url: window.location.href
+      })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+    }
+    onShare?.(job)
+  }
+
+  if (variant === 'compact') {
+    return (
+      <Card className={cn("hover:shadow-md transition-shadow cursor-pointer relative", className)}>
+        {getApplicationStatusBadge()}
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-sm truncate">{job.title}</h3>
+                <Badge className={urgencyColors[job.urgency_level]} variant="secondary">
+                  {urgencyLevelDisplayNames[job.urgency_level]}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center gap-4 text-xs text-gray-600">
+                <div className="flex items-center gap-1">
+                  <DollarSignIcon className="h-3 w-3" />
+                  <span>${job.hourly_rate}/hr</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MapPinIcon className="h-3 w-3" />
+                  <span className="truncate">{job.location.address}</span>
+                </div>
+                {job.distance && (
+                  <span>{job.distance}mi</span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1 ml-2">
+              <ClockIcon className="h-4 w-4 text-gray-400" />
+              <span className="text-xs text-gray-500">
+                {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Default variant
+  return (
+    <Card className={cn("hover:shadow-md transition-shadow cursor-pointer relative h-full flex flex-col", className)}>
+      {getApplicationStatusBadge()}
+      
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-semibold truncate">{job.title}</h3>
+              <Badge className={urgencyColors[job.urgency_level]} variant="secondary">
+                {urgencyLevelDisplayNames[job.urgency_level]}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-1">
+                <DollarSignIcon className="h-4 w-4" />
+                <span className="font-semibold">${job.hourly_rate}/hr</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <MapPinIcon className="h-4 w-4" />
+                <span className="truncate">{job.location.address}</span>
+              </div>
+              {job.distance && (
+                <span>{job.distance}mi</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="pt-0 flex-1">
+        <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+          {job.description}
+        </p>
+      </CardContent>
+      
+      <CardFooter className="flex items-center justify-between">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <ClockIcon className="h-3 w-3" />
+          <span>{formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</span>
+        </div>
+        
+        {showActions && (
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleSave}
+              className={cn("h-8 w-8 p-0", isSaved && "text-red-500")}
+            >
+              <HeartIcon className={cn("h-3 w-3", isSaved && "fill-current")} />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleShare}
+              className="h-8 w-8 p-0"
+            >
+              <ShareIcon className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onView?.(job)}
+            >
+              View
+            </Button>
+            {renderActionButton()}
+          </div>
+        )}
+      </CardFooter>
     </Card>
   )
 }

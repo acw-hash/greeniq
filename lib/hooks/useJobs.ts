@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, useMemo } from 'react'
 import { useJobStore, Job } from '@/lib/stores/jobStore'
 import { JobFormData, JobSearchData } from '@/lib/validations/jobs'
+import { CreateApplicationData } from '@/types/jobs'
 import { toast } from '@/lib/utils/toast'
 import { createClient } from '@/lib/supabase/client'
 
@@ -451,5 +452,128 @@ export const useUpdateApplication = () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] })
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
     }
+  })
+}
+
+// Hook for jobs with application status
+export const useJobsWithApplicationStatus = (filters: JobSearchData) => {
+  return useQuery({
+    queryKey: [...jobKeys.search(filters), 'with-application-status'],
+    queryFn: async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      let query = supabase
+        .from('jobs')
+        .select(`
+          *,
+          golf_course_profiles(course_name, location),
+          applications(
+            id,
+            status,
+            professional_id,
+            applied_at
+          )
+        `)
+        .eq('status', 'open')
+      
+      // Apply existing filters
+      if (filters.job_type) {
+        query = query.eq('job_type', filters.job_type)
+      }
+      if (filters.min_rate) {
+        query = query.gte('hourly_rate', filters.min_rate)
+      }
+      if (filters.max_rate) {
+        query = query.lte('hourly_rate', filters.max_rate)
+      }
+      if (filters.urgency_level) {
+        query = query.eq('urgency_level', filters.urgency_level)
+      }
+      if (filters.required_experience) {
+        query = query.eq('required_experience', filters.required_experience)
+      }
+      if (filters.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
+      
+      if (error) throw error
+      
+      // Add application status for current user
+      const jobsWithApplicationStatus = data?.map(job => ({
+        ...job,
+        userApplication: job.applications?.find(
+          app => app.professional_id === user.id
+        ) || null,
+        hasApplied: job.applications?.some(
+          app => app.professional_id === user.id
+        ) || false
+      })) || []
+
+      return {
+        jobs: jobsWithApplicationStatus,
+        pagination: {
+          page: filters.page || 1,
+          limit: filters.limit || 20,
+          totalPages: Math.ceil(jobsWithApplicationStatus.length / (filters.limit || 20))
+        },
+        stats: {
+          totalJobs: jobsWithApplicationStatus.length,
+          averageRate: jobsWithApplicationStatus.reduce((sum, job) => sum + job.hourly_rate, 0) / jobsWithApplicationStatus.length || 0
+        }
+      }
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000,
+    enabled: !!filters
+  })
+}
+
+// Hook for job application with optimistic updates
+export const useJobApplication = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (application: CreateApplicationData) => {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('applications')
+        .insert(application)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data, variables) => {
+      // Update the jobs query cache to reflect new application
+      queryClient.setQueryData(['jobs'], (oldData: any) => {
+        if (!oldData) return oldData
+        
+        return {
+          ...oldData,
+          jobs: oldData.jobs.map((job: any) => {
+            if (job.id === variables.job_id) {
+              return {
+                ...job,
+                hasApplied: true,
+                userApplication: data
+              }
+            }
+            return job
+          })
+        }
+      })
+      
+      // Also invalidate to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['applications'] })
+    },
   })
 }

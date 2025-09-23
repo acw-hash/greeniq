@@ -1,8 +1,41 @@
 import { Database } from './index'
 
+// Job and Application Status Types
+export type JobStatus = 
+  | 'open' 
+  | 'accepted' 
+  | 'confirmed' 
+  | 'in_progress' 
+  | 'awaiting_review' 
+  | 'completed' 
+  | 'cancelled'
+
+export type ApplicationStatus = 
+  | 'pending' 
+  | 'accepted' 
+  | 'confirmed' 
+  | 'denied' 
+  | 'rejected'
+
+export type UpdateType = 'milestone' | 'text' | 'photo' | 'completion'
+export type Milestone = 'started' | 'in_progress' | 'awaiting_review' | 'completed'
+
+// Job Update Interface
+export interface JobUpdate {
+  id: string
+  job_id: string
+  professional_id: string
+  update_type: UpdateType
+  milestone?: Milestone
+  content?: string
+  photo_urls?: string[]
+  created_at: string
+}
+
 export type Job = Database['public']['Tables']['jobs']['Row'] & {
   golf_course_profiles?: Database['public']['Tables']['golf_course_profiles']['Row']
   applications?: Application[]
+  job_updates?: JobUpdate[]
   _count?: {
     applications: number
   }
@@ -18,6 +51,11 @@ export type JobWithDetails = Job & {
   applications: (Application & {
     professional_profiles: Database['public']['Tables']['professional_profiles']['Row']
   })[]
+  job_updates: JobUpdate[]
+  professional_profiles?: {
+    full_name: string
+    rating: number
+  }
 }
 
 export interface CreateJobData {
@@ -55,6 +93,15 @@ export interface CreateApplicationData {
   job_id: string
   message?: string
   proposed_rate?: number
+}
+
+export interface JobWithApplicationStatus extends Omit<Job, 'golf_course_profiles'> {
+  userApplication: Application | null
+  hasApplied: boolean
+  golf_course_profiles?: {
+    course_name: string
+    location: string
+  }
 }
 
 export const JOB_TYPES = [

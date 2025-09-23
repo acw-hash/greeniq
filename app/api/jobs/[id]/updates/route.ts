@@ -5,32 +5,26 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createClient()
-  
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get job updates with user details
-    const { data: updates, error } = await supabase
+    const supabase = createClient()
+    
+    const { data, error } = await supabase
       .from('job_updates')
       .select(`
         *,
-        profiles!job_updates_professional_id_fkey (
-          full_name
-        )
+        professional_profiles!inner(full_name)
       `)
       .eq('job_id', params.id)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
 
     if (error) throw error
 
-    return NextResponse.json(updates || [])
+    return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching job updates:', error)
-    return NextResponse.json({ error: 'Failed to fetch updates' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch job updates' },
+      { status: 500 }
+    )
   }
 }
 
@@ -38,45 +32,30 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createClient()
-  
   try {
+    const supabase = createClient()
+    const { update_type, milestone, content, photo_urls } = await request.json()
+    
+    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { content } = body
-
-    if (!content || !content.trim()) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
-    }
-
-    // Verify user has permission to update this job
+    // Verify user is the professional for this job
     const { data: job, error: jobError } = await supabase
       .from('jobs')
       .select(`
         *,
-        applications!inner (
-          professional_id,
-          status
-        )
+        applications!inner(professional_id)
       `)
       .eq('id', params.id)
+      .eq('applications.professional_id', user.id)
+      .eq('applications.status', 'confirmed')
       .single()
 
     if (jobError || !job) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
-    }
-
-    // Check if user is the assigned professional
-    const isAssignedProfessional = job.applications.some(
-      app => app.professional_id === user.id && app.status === 'accepted'
-    )
-
-    if (!isAssignedProfessional) {
-      return NextResponse.json({ error: 'Not authorized to update this job' }, { status: 403 })
+      return NextResponse.json({ error: 'Job not found or unauthorized' }, { status: 404 })
     }
 
     // Create job update
@@ -85,22 +64,42 @@ export async function POST(
       .insert({
         job_id: params.id,
         professional_id: user.id,
-        content: content.trim(),
-        created_at: new Date().toISOString()
+        update_type,
+        milestone,
+        content,
+        photo_urls
       })
-      .select(`
-        *,
-        profiles!job_updates_professional_id_fkey (
-          full_name
-        )
-      `)
+      .select()
       .single()
 
     if (updateError) throw updateError
 
+    // Update job status if milestone update
+    if (update_type === 'milestone' && milestone) {
+      const { error: statusError } = await supabase
+        .from('jobs')
+        .update({ status: milestone === 'completed' ? 'completed' : 'in_progress' })
+        .eq('id', params.id)
+
+      if (statusError) throw statusError
+    }
+
+    // Create notification for golf course
+    await supabase
+      .from('notifications')
+      .insert({
+        user_id: job.course_id,
+        type: 'job_update',
+        title: 'Job Update',
+        message: milestone ? `Job milestone: ${milestone}` : 'New job update available',
+        metadata: { job_id: params.id, update_id: update.id }
+      })
+
     return NextResponse.json(update)
   } catch (error) {
-    console.error('Error creating job update:', error)
-    return NextResponse.json({ error: 'Failed to create update' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to create job update' },
+      { status: 500 }
+    )
   }
 }

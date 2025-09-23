@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useJobs } from '@/lib/hooks/useJobs'
+import { useJobsWithApplicationStatus } from '@/lib/hooks/useJobs'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, MapPin, Clock, DollarSign, Filter } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
+import { EnhancedJobList } from './EnhancedJobList'
+import { JobWithApplicationStatus } from '@/types/jobs'
 
 export default function BrowseJobsPage() {
   const { profile } = useAuth()
@@ -19,8 +21,8 @@ export default function BrowseJobsPage() {
   const [rateFilter, setRateFilter] = useState<string>('all')
   const [distanceFilter, setDistanceFilter] = useState<string>('all')
   
-  // Get all open jobs for professionals to browse
-  const { data: jobsData, isLoading } = useJobs({
+  // Get all open jobs for professionals to browse with application status
+  const { data: jobsData, isLoading } = useJobsWithApplicationStatus({
     status: 'open',
     search: searchTerm,
     job_type: jobTypeFilter === 'all' ? undefined : jobTypeFilter as any,
@@ -30,7 +32,7 @@ export default function BrowseJobsPage() {
     limit: 20
   })
 
-  const jobs = jobsData?.jobs || []
+  const jobs: JobWithApplicationStatus[] = jobsData?.jobs || []
 
   const filteredJobs = jobs?.filter(job => {
     if (searchTerm && !job.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
@@ -124,124 +126,24 @@ export default function BrowseJobsPage() {
         </CardContent>
       </Card>
 
-      {/* Recommended Jobs Section */}
-      {recommendedJobs.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Recommended for You</h2>
-          <div className="grid gap-6">
-            {recommendedJobs.map((job) => (
-              <JobCard key={job.id} job={job} isRecommended={true} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* All Jobs Section */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">
-          {recommendedJobs.length > 0 ? 'Other Available Jobs' : 'Available Jobs'}
-          <span className="text-sm font-normal text-muted-foreground ml-2">
-            ({otherJobs.length} jobs)
-          </span>
-        </h2>
-        
-        {otherJobs.length > 0 ? (
-          <div className="grid gap-6">
-            {otherJobs.map((job) => (
-              <JobCard key={job.id} job={job} isRecommended={false} />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <h3 className="text-lg font-medium mb-2">No jobs found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search filters to find more opportunities.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {/* Enhanced Job List with Application Status Filtering */}
+      <EnhancedJobList 
+        initialJobs={filteredJobs}
+        userType="professional"
+        onJobView={(job) => {
+          // Handle job view - could navigate to job details
+          console.log('View job:', job.id)
+        }}
+        onJobSave={(job) => {
+          // Handle job save
+          console.log('Save job:', job.id)
+        }}
+        onJobShare={(job) => {
+          // Handle job share
+          console.log('Share job:', job.id)
+        }}
+      />
     </div>
   )
 }
 
-function JobCard({ job, isRecommended }: { job: any; isRecommended: boolean }) {
-  return (
-    <Card className={isRecommended ? 'border-primary bg-primary/5' : ''}>
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1">
-            {isRecommended && (
-              <Badge className="mb-2" variant="default">Recommended</Badge>
-            )}
-            <Link href={`/jobs/${job.id}`}>
-              <h3 className="text-lg font-semibold hover:text-primary cursor-pointer mb-2">
-                {job.title}
-              </h3>
-            </Link>
-            <p className="text-sm text-muted-foreground mb-2">
-              {job.golf_course_profiles?.course_name || job.profiles?.golf_course_profiles?.course_name}
-            </p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <DollarSign className="w-4 h-4" />
-                <span className="font-medium text-green-600">${job.hourly_rate}/hr</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{formatDistanceToNow(new Date(job.created_at))} ago</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span>2.5 miles away</span> {/* TODO: Calculate actual distance */}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <Badge variant={
-              job.urgency_level === 'high' ? 'destructive' :
-              job.urgency_level === 'emergency' ? 'destructive' : 'secondary'
-            }>
-              {job.urgency_level}
-            </Badge>
-            <Badge variant="outline">{job.job_type.replace('_', ' ')}</Badge>
-          </div>
-        </div>
-        
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {job.description}
-        </p>
-        
-        {job.required_certifications && job.required_certifications.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {job.required_certifications.slice(0, 3).map((cert: string) => (
-              <Badge key={cert} variant="outline" className="text-xs">
-                {cert.replace('_', ' ')}
-              </Badge>
-            ))}
-            {job.required_certifications.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{job.required_certifications.length - 3} more
-              </Badge>
-            )}
-          </div>
-        )}
-        
-        <div className="flex justify-between items-center">
-          <div className="text-xs text-muted-foreground">
-            Starts: {new Date(job.start_date).toLocaleDateString()}
-          </div>
-          <div className="flex gap-2">
-            <Link href={`/jobs/${job.id}`}>
-              <Button variant="outline" size="sm">View Details</Button>
-            </Link>
-            <Link href={`/jobs/${job.id}/apply`}>
-              <Button size="sm">Apply Now</Button>
-            </Link>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}

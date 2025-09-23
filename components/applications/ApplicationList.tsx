@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ApplicationCard } from './ApplicationCard'
+import { ApplicationConfirmation } from './ApplicationConfirmation'
 import { useDebounce } from 'use-debounce'
 import type { Database } from '@/types'
 
@@ -228,18 +229,24 @@ export function ApplicationList({
       {filteredApplications.length > 0 ? (
         <div className="space-y-4">
           {filteredApplications.map((application: any) => (
-            <ApplicationCard
-              key={application.id}
-              application={application}
-              viewMode={viewMode}
-              onStatusUpdate={viewMode === 'golf_course' ? 
-                (id: string, status: 'accepted_by_course' | 'rejected') => {
-                  if (status === 'accepted_by_course' && onAccept) onAccept(id)
-                  if (status === 'rejected' && onReject) onReject(id)
-                } : undefined
-              }
-              onAcceptJob={viewMode === 'professional' ? onAcceptJob : undefined}
-            />
+            <div key={application.id} className="space-y-4">
+              {/* Show confirmation component for accepted applications */}
+              {viewMode === 'professional' && application.status === 'accepted' && (
+                <ApplicationConfirmation application={application} />
+              )}
+              
+              <ApplicationCard
+                application={application}
+                viewMode={viewMode}
+                onStatusUpdate={viewMode === 'golf_course' ? 
+                  (id: string, status: 'accepted_by_course' | 'rejected') => {
+                    if (status === 'accepted_by_course' && onAccept) onAccept(id)
+                    if (status === 'rejected' && onReject) onReject(id)
+                  } : undefined
+                }
+                onAcceptJob={viewMode === 'professional' ? onAcceptJob : undefined}
+              />
+            </div>
           ))}
         </div>
       ) : applications.length === 0 ? (

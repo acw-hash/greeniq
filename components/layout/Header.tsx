@@ -7,6 +7,8 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { HeaderLogo } from '@/components/ui/Logo'
+import { NotificationCenter } from '@/components/notifications/NotificationCenter'
+import { useNotifications } from '@/lib/hooks/useNotifications'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +34,8 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, profile, signOut } = useAuth()
   const router = useRouter()
-  const [notifications] = useState(3) // Mock notification count
+  const { unreadCount } = useNotifications()
+  const [showNotifications, setShowNotifications] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -94,14 +97,19 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative"
+            onClick={() => setShowNotifications(!showNotifications)}
+          >
             <Bell className="h-5 w-5" />
-            {notifications > 0 && (
+            {unreadCount > 0 && (
               <Badge 
                 className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 variant="destructive"
               >
-                {notifications}
+                {unreadCount}
               </Badge>
             )}
           </Button>
@@ -145,6 +153,12 @@ export function Header({ onMenuClick }: HeaderProps) {
           </DropdownMenu>
         </div>
       </div>
+      
+      {/* Notification Center */}
+      <NotificationCenter 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
     </header>
   )
 }
